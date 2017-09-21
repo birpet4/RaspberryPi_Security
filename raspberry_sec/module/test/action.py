@@ -1,4 +1,4 @@
-from raspberry_sec.interface.action import action
+from raspberry_sec.interface.action import Action
 
 
 class TestAction(Action):

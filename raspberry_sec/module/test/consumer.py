@@ -1,5 +1,5 @@
 import time
-from raspberry_sec.interface.consumer import Consumer
+from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
 
 class TestConsumer(Consumer):
@@ -14,4 +14,4 @@ class TestConsumer(Consumer):
             print('Finished sleeping')
             return context
         else:
-            return ConsumerContext(data, False)
+            return ConsumerContext('data', False)

@@ -1,7 +1,7 @@
 class ConsumerContext:
 
     def __init__(self, _data, _alert: bool):
-        self.data = data
+        self.data = _data
         self.alert = _alert
         
         
