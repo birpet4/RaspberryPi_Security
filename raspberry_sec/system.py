@@ -5,23 +5,6 @@ from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 from raspberry_sec.interface.action import Action
 
 
-class StreamController:
-
-    def __init__(self):
-        self.stream_alerts = {}
-        self.enabled = True
-
-    def set_alert(self, stream: Stream, alert: bool)
-        self.stream_alerts[stream] = alert 
-
-    def run(self):
-        while enabled:
-            time.sleep(3)
-            alert = all(self.stream_alerts.values())
-            if alert:
-                print('ALERT !!!')
-
-
 class Stream:
 
     def __init__(self):
@@ -44,6 +27,23 @@ class Stream:
             self.stream_controller.set_alert(self, context.alert)
 
 
+class StreamController:
+
+    def __init__(self):
+        self.stream_alerts = {}
+        self.enabled = True
+
+    def set_alert(self, stream: Stream, alert: bool):
+        self.stream_alerts[stream] = alert 
+
+    def run(self):
+        while self.enabled:
+            time.sleep(3)
+            alert = all(self.stream_alerts.values())
+            if alert:
+                print('ALERT !!!')
+
+
 class PCASystem:
 
     def __init__(self):
@@ -57,14 +57,18 @@ class PCASystem:
         pass
 
     def run(self):
-        thread_count = len(streams) + 1
+        stream_thread_count = len(self.streams)
         futures = []
-        with ThreadPoolExecutor(max_workers=thread_count) as executor:
-            futures.append(executor.submit(self.stream_controller.run))
-            for stream in self.streams:
-                futures.append(executor.submit(stream.run))
 
-        time.sleep(22)
-        for future in futures:
-            future.cancel()
-        executor.shutdown()
+        if stream_thread_count:
+            with ThreadPoolExecutor(max_workers=stream_thread_count) as executor:
+                for stream in self.streams:
+                    futures.append(executor.submit(stream.run))
+
+            self.stream_controller.run()
+
+            for future in futures:
+                future.cancel()
+            executor.shutdown()
+        else:
+            print('No streams defined')
