@@ -1,9 +1,19 @@
+from enum import Enum
+
+
+class Type(Enum):
+    CAMERA = 1
+
+
 class Producer:
 
     def get_name(self):
         pass
 
     def get_data(self):
+        pass
+
+    def get_type(self):
         pass
 
     def __eq__(self, other):

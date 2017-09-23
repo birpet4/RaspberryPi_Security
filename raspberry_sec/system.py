@@ -1,4 +1,5 @@
 import time
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from raspberry_sec.interface.producer import Producer
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
@@ -6,6 +7,8 @@ from raspberry_sec.interface.action import Action
 
 
 class Stream:
+
+    LOGGER = logging.getLogger('Stream')
 
     def __init__(self):
         self.producer = None
@@ -29,6 +32,8 @@ class Stream:
 
 class StreamController:
 
+    LOGGER = logging.getLogger('StreamController')
+
     def __init__(self):
         self.stream_alerts = {}
         self.enabled = True
@@ -41,10 +46,12 @@ class StreamController:
             time.sleep(3)
             alert = all(self.stream_alerts.values())
             if alert:
-                print('ALERT !!!')
+                self.LOGGER.info('ALERT !!!')
 
 
 class PCASystem:
+
+    LOGGER = logging.getLogger('PCASystem')
 
     def __init__(self):
         self.producers = set()
@@ -71,4 +78,4 @@ class PCASystem:
                 future.cancel()
             executor.shutdown()
         else:
-            print('No streams defined')
+            self.LOGGER.error('No streams defined')

@@ -12,6 +12,9 @@ class Consumer:
 
     def run(self, context: ConsumerContext):
         pass
+
+    def get_type(self):
+        pass
     
     def __eq__(self, other):
         return self.get_name() == other.get_name()
