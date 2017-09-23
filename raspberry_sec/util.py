@@ -1,5 +1,6 @@
 import importlib
 import pkgutil
+import logging
 from raspberry_sec.interface.producer import Producer
 from raspberry_sec.interface.consumer import Consumer
 from raspberry_sec.interface.action import Action
@@ -7,11 +8,14 @@ from raspberry_sec.interface.action import Action
 
 class DynamicLoader:
 
+    LOGGER = logging.getLogger('DynamicLoader')
+
     @staticmethod
     def load_class(full_class_name: str):
         class_name_parts = full_class_name.split('.')
         class_name = class_name_parts[-1]
         module_name = '.'.join(class_name_parts[:-1])
+
         _module = importlib.import_module(module_name)
         return getattr(_module, class_name)
 
@@ -22,45 +26,45 @@ class DynamicLoader:
         for (path, name, is_package) in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
             if not is_package:
                 modules.append(name)
+        return modules
 
 
 class PCALoader(DynamicLoader):
 
+    LOGGER = logging.getLogger('PCALoader')
     module_package = 'raspberry_sec.module'
-    allowed_modules = {'action': Action, 'consumer': Consumer, 'producer': Producer}
+    allowed_modules = set(['action', 'consumer','producer'])
+    loaded_classes = {Action: set(), Consumer: set(), Producer: set()}
 
-    def filter_modules(self, modules: list):
+    @staticmethod
+    def generate_class_names(modules: list):
+        class_names = []
+        for _module in modules:
+            _module_parts = _module.split('.')
+            module_name = _module_parts[-1]
+            package_name = _module_parts[-2]
+            class_names.append('.'.join([_module, package_name.capitalize() + module_name.capitalize()]))
+        return class_names
+
+    def filter_for_allowed_modules(self, modules: list):
         filtered_modules = []
         for _module in modules:
-            module_name = _module.split('.')[:-1]
-            if self.allowed_modules.has_key(module_name):
-                filtered_modules.append(module)
+            module_name = _module.split('.')[-1]
+            if module_name in self.allowed_modules:
+                filtered_modules.append(_module)
         return filtered_modules
 
-    def method(self):
-        module_base = 'modules'
-        entry_base = 'consumer'
-        new_mod1 = 'detector'
-        new_mod2 = 'recognizer'
+    def load(self):
+        modules = DynamicLoader.list_modules(self.module_package)
+        modules = self.filter_for_allowed_modules(modules)
+        classes = PCALoader.generate_class_names(modules)
 
-        new_mod_consumer1 = DynamicLoader.load_class('.'.join([
-            module_base, 
-            new_mod1, 
-            entry_base, 
-            new_mod1.capitalize() + 'Consumer']))
-
-        new_mod_consumer2 = DynamicLoader.load_class('.'.join([
-            module_base, 
-            new_mod2, 
-            entry_base, 
-            new_mod2.capitalize() + 'Consumer'])) 
-    
-        if (issubclass(new_mod_consumer1, Consumer) and 
-            issubclass(new_mod_consumer2, Consumer)):    
-            new_mod_consumer1().run()
-            new_mod_consumer2().run()
-        else:
-            print('Wrong class detected')
-
-
-print('Hi')
+        for _class in classes:
+            try:
+                loaded_class = DynamicLoader.load_class(_class)
+                for key in self.loaded_classes.keys():
+                    if issubclass(loaded_class, key):
+                        self.loaded_classes[key].add(loaded_class)
+                        break
+            except ImportError:
+                PCALoader.LOGGER.error(_class + ' - Cannot be imported')
