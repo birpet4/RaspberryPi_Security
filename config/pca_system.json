@@ -1,0 +1,37 @@
+{
+    "__type__": "PCASystem",
+    "actions": [
+        "TestAction"
+    ],
+    "consumers": [
+        "TestConsumer"
+    ],
+    "producers": [
+        "TestProducer"
+    ],
+    "stream_controller": {
+        "__type__": "StreamController",
+        "action": "TestAction",
+        "query": "False"
+    },
+    "streams": [
+        {
+            "__type__": "Stream",
+            "consumers": [
+                "TestConsumer"
+            ],
+            "enabled": true,
+            "name": "stream2",
+            "producer": "TestProducer"
+        },
+        {
+            "__type__": "Stream",
+            "consumers": [
+                "TestConsumer"
+            ],
+            "enabled": true,
+            "name": "stream1",
+            "producer": "TestProducer"
+        }
+    ]
+}
