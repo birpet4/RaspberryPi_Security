@@ -27,7 +27,20 @@ class Stream:
 	def __hash__(self):
 		return hash(self.get_name())
 
+	def validate_components(self):
+		if self.producer is None:
+			Stream.LOGGER.error('No producer set for stream: ' + self.name)
+			raise
+
+		prod_type = self.producer().get_type()
+		for consumer in self.consumers:
+			if consumer().get_type() is not prod_type:
+				Stream.LOGGER.error('Wrong consumer type in stream: ' + self.name)
+				raise
+
 	def run(self, queue: Queue):
+		self.validate_components()
+
 		while True:
 			# instantiating classes
 			producer = self.producer()
@@ -64,7 +77,7 @@ class StreamController:
 
 	def decide_alert(self, messages: list()):
 		query = self.query
-		alert_data = ''
+		alert_data_list = []
 
 		# iterating through every alert message
 		for sender, msg_iter in groupby(messages, lambda m: m.sender):
@@ -72,7 +85,7 @@ class StreamController:
 			if alert_messages:
 				StreamController.LOGGER.debug(sender + ' reported ' + str(len(alert_messages)) + ' alert messages')
 				query = query.replace('@' + sender.upper() + '@', 'True')
-				alert_data = alert_data + ';'.join([am.msg for am in alert_messages])
+				alert_data_list = alert_data_list + [am.msg for am in alert_messages]
 			else:
 				query = query.replace('@' + sender.upper() + '@', 'False')
 
@@ -80,7 +93,7 @@ class StreamController:
 		query = re.sub(pattern=StreamController.PLACEHOLDER_PATTERN, repl='False', string=query)
 
 		StreamController.LOGGER.debug('Evaluating query: ' + query)
-		return eval(query), alert_data
+		return eval(query), '; '.join(alert_data_list)
 
 	def run(self, queue: Queue, limit: int):
 		# instantiating action
