@@ -125,7 +125,6 @@ class PCASystemJSONEncoder(JSONEncoder):
 			obj_dict = dict()
 			obj_dict['producer'] = obj.producer.__name__
 			obj_dict['consumers'] = [c.__name__ for c in obj.consumers]
-			obj_dict['enabled'] = obj.enabled
 			obj_dict['name'] = obj.name
 			class_name = Stream.__name__
 		elif isinstance(obj, PCASystem):
@@ -181,7 +180,6 @@ class PCASystemJSONDecoder(JSONDecoder):
 		elif obj_dict[PCASystemJSONEncoder.TYPE] == Stream.__name__:
 			try:
 				new_stream = Stream(_name=obj_dict['name'])
-				new_stream.enabled = obj_dict['enabled']
 				new_stream.producer = loaded_producers[obj_dict['producer']]
 				new_stream.consumers = [loaded_consumers[cons] for cons in obj_dict['consumers']]
 				return new_stream
