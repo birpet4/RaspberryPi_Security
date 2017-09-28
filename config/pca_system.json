@@ -12,7 +12,7 @@
     "stream_controller": {
         "__type__": "StreamController",
         "action": "TestAction",
-        "query": "False"
+        "query": "@STREAM1@ and @STREAM2@"
     },
     "streams": [
         {
@@ -20,8 +20,7 @@
             "consumers": [
                 "TestConsumer"
             ],
-            "enabled": true,
-            "name": "stream2",
+            "name": "STREAM2",
             "producer": "TestProducer"
         },
         {
@@ -29,8 +28,7 @@
             "consumers": [
                 "TestConsumer"
             ],
-            "enabled": true,
-            "name": "stream1",
+            "name": "STREAM1",
             "producer": "TestProducer"
         }
     ]

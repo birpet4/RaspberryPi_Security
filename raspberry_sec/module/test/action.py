@@ -1,4 +1,5 @@
 import logging
+import time
 from raspberry_sec.interface.action import Action
 
 
@@ -11,3 +12,4 @@ class TestAction(Action):
 
     def fire(self, msg: str):
         TestAction.LOGGER.info('Action fired: ' + msg)
+        time.sleep(2)

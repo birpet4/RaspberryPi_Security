@@ -15,7 +15,6 @@ class TestConsumer(Consumer):
         if context.alert:
             TestConsumer.LOGGER.info('Sleeping now')
             time.sleep(5)
-            TestConsumer.LOGGER.debug('Finished sleeping')
             return context
         else:
             return ConsumerContext('data', False)

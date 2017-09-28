@@ -1,4 +1,5 @@
 import logging
+import time
 from raspberry_sec.interface.producer import Producer, Type
 
 
@@ -11,6 +12,7 @@ class TestProducer(Producer):
 
     def get_data(self):
         TestProducer.LOGGER.info('Producer called')
+        time.sleep(0.5)
         return 'TestProducer data'
 
     def get_type(self):
