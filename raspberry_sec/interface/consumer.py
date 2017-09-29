@@ -1,23 +1,49 @@
 class ConsumerContext:
+	"""
+	Class for storing data when transitioning between Consumer-s
+	"""
+	def __init__(self, _data, _alert: bool):
+		"""
+		Constructor
+		:param _data: sample data
+		:param _alert: True or False
+		"""
+		self.data = _data
+		self.alert = _alert
 
-    def __init__(self, _data, _alert: bool):
-        self.data = _data
-        self.alert = _alert
-        
-        
+
 class Consumer:
-    
-    def get_name(self):
-        pass
+	"""
+	Base class for consuming sample data
+	"""
+	def get_name(self):
+		"""
+		:return: name of the component
+		"""
+		pass
 
-    def run(self, context: ConsumerContext):
-        pass
+	def run(self, context: ConsumerContext):
+		"""
+		:param context: contains session data
+		:return: modified/new context
+		"""
+		pass
 
-    def get_type(self):
-        pass
-    
-    def __eq__(self, other):
-        return self.get_name() == other.get_name()
+	def get_type(self):
+		"""
+		:return: Producer.Type
+		"""
+		pass
 
-    def __hash__(self):
-        return hash(self.get_name())
+	def __eq__(self, other):
+		"""
+		:param other: other object
+		:return: True or False depending on the name
+		"""
+		return self.get_name() == other.get_name()
+
+	def __hash__(self):
+		"""
+		:return: hash code
+		"""
+		return hash(self.get_name())

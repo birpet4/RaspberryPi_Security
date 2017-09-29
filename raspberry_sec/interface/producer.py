@@ -2,22 +2,43 @@ from enum import Enum
 
 
 class Type(Enum):
-    CAMERA = 1
+	"""
+	Producer types
+	"""
+	CAMERA=1
 
 
 class Producer:
+	"""
+	Base class for producing sample data
+	"""
+	def get_name(self):
+		"""
+		:return: name of the component
+		"""
+		pass
 
-    def get_name(self):
-        pass
+	def get_data(self):
+		"""
+		:return: sample data
+		"""
+		pass
 
-    def get_data(self):
-        pass
+	def get_type(self):
+		"""
+		:return: Producer.Type
+		"""
+		pass
 
-    def get_type(self):
-        pass
+	def __eq__(self, other):
+		"""
+		:param other object
+		:return: True or False depending on the name
+		"""
+		return self.get_name() == other.get_name()
 
-    def __eq__(self, other):
-        return self.get_name() == other.get_name()
-
-    def __hash__(self):
-        return hash(self.get_name())
+	def __hash__(self):
+		"""
+		:return: hash code
+		"""
+		return hash(self.get_name())

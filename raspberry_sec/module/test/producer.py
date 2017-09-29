@@ -4,7 +4,9 @@ from raspberry_sec.interface.producer import Producer, Type
 
 
 class TestProducer(Producer):
-
+    """
+    Producer class for testing purposes
+    """
     LOGGER = logging.getLogger('TestProducer')
 
     def get_name(self):
@@ -16,4 +18,4 @@ class TestProducer(Producer):
         return 'TestProducer data'
 
     def get_type(self):
-        return Type.CAMERA
+    	return Type.CAMERA
