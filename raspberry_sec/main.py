@@ -7,18 +7,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from raspberry_sec.util import PCASystemJSONDecoder
 
 
-LOGGER = logging.getLogger('main')
-
-
 def setup_logging():
+	"""
+	Sets up the global logging facility
+	"""
 	logging.basicConfig(
 		format='[%(asctime)s]:[%(processName)s,%(threadName)s]:%(name)s:%(levelname)s - %(message)s',
-		level=logging.DEBUG)
+		level=logging.INFO)
 
 
 def main():
 	setup_logging()
-	LOGGER.info('Starting up service')
 
 	pca_system = PCASystemJSONDecoder.load_from_config('../config/pca_system.json')
 	event = Event()
@@ -27,7 +26,6 @@ def main():
 	pca_thread.start()
 
 	time.sleep(15)
-	LOGGER.info('Stopping service')
 	pca_system.enabled = False
 	event.set()
 
