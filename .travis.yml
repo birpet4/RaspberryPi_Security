@@ -7,4 +7,4 @@ install:
   - pip install pytest
 
 script:
-  - make.sh
+  - bash make.sh
