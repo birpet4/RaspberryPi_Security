@@ -27,7 +27,7 @@ echo '=== Running unit-tests'
 pytest .
 
 # if no tests were found, don't fail
-if [ 5 eq $? ]
+if [ 5 -eq $? ]
 then
 	exit 0
 fi
