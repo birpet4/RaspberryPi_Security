@@ -2,11 +2,11 @@ import time
 import logging
 import re
 from itertools import groupby
-from multiprocessing import Process
-from multiprocessing import Queue
+from multiprocessing import Process, Queue, Event
 from threading import Event
 from concurrent.futures import ThreadPoolExecutor
 from raspberry_sec.interface.consumer import ConsumerContext
+from raspberry_sec.interface.producer import ProducerDataProxy, ProducerDataManager
 
 
 class Stream:
@@ -46,8 +46,8 @@ class Stream:
 
 	def validate(self):
 		"""
-
-		:return:
+		This method validates whether the stream is properly configured.
+		Raises exception if not.
 		"""
 		if self.producer is None:
 			Stream.LOGGER.error('No producer set for stream: ' + self.name)
@@ -59,29 +59,33 @@ class Stream:
 				Stream.LOGGER.error('Wrong consumer type in stream: ' + self.name)
 				raise
 
-	def run(self, queue: Queue):
+	def run(self, queue: Queue, producer_data_proxy: ProducerDataProxy):
 		"""
-		
-		:param queue:
-		:return:
+		This method runs the stream.
+		:param queue: for sending alert messages
+		:param producer_data_proxy: for sharing data between producers
 		"""
 		self.validate()
 
+		# instantiating classes
+		producer = self.producer()
+		consumers = [consumer() for consumer in self.consumers]
+
+		# stream main loop
 		while True:
-			# instantiating classes
-			producer = self.producer()
-			consumers = [consumer() for consumer in self.consumers]
+			try:
+				Stream.LOGGER.debug(self.name + ' calling producer')
+				data = producer.get_data(producer_data_proxy)
 
-			Stream.LOGGER.debug(self.name + ' calling producer')
-			data = producer.get_data()
+				context = ConsumerContext(data, True)
+				for consumer in consumers:
+					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
+					context = consumer.run(context)
 
-			context = ConsumerContext(data, True)
-			for consumer in consumers:
-				Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
-				context = consumer.run(context)
-
-			Stream.LOGGER.debug(self.name + ' enqueueing controller message')
-			queue.put(StreamControllerMessage(_alert=context.alert, _msg=context.data, _sender=self.name))
+				Stream.LOGGER.debug(self.name + ' enqueueing controller message')
+				queue.put(StreamControllerMessage(_alert=context.alert, _msg=context.data, _sender=self.name))
+			except:
+				Stream.LOGGER.error('Something really bad happened')
 
 
 class StreamControllerMessage:
@@ -162,9 +166,9 @@ class StreamController:
 
 	def run(self, queue: Queue, limit: int):
 		"""
-		This method in an infinite loop polls the queue for new messages
+		This method polls the queue for new messages
 		and takes care of the action firing mechanism.
-		:param queue: for inter-process communication
+		:param queue: for inter-process communication (receives messages)
 		:param limit: max number of messages to handle at once
 		"""
 		# instantiating action
@@ -197,6 +201,8 @@ class PCASystem:
 	Class for hosting the components. Serves as a container.
 	"""
 	LOGGER = logging.getLogger('PCASystem')
+	TIMEOUT = 1
+	POLLING_INTERVAL = 2
 
 	def __init__(self):
 		"""
@@ -206,12 +212,12 @@ class PCASystem:
 		self.consumers = dict()
 		self.actions = dict()
 		self.streams = set()
-		self.enabled = True
 		self.stream_controller = None
 
 	def validate(self):
 		"""
-		Validates the system by checking its sub-components
+		Validates the system by checking its sub-components.
+		Raises exception if something is wrong.
 		"""
 		if not self.stream_controller:
 			PCASystem.LOGGER.error('StreamController was not set')
@@ -220,38 +226,115 @@ class PCASystem:
 		if not self.streams:
 			PCASystem.LOGGER.warning('There are no streams configured')
 
-	def run(self, event: Event):
+	def start_stream_controller(self, queue: Queue):
 		"""
-		This method starts the components in separate processes
-		and then waits for events. Terminate the processes if necessary.
-		:param event: Event object for notification
+		Starts the stream controller in a separate process
+		:param queue: for communication between streams and the controller
+		:return: newly created process
 		"""
-		processes = []
-		queue = Queue()
-
-		self.validate()
-
-		# starting StreamController process
-		sc_message_limit = len(self.streams)*2
+		sc_message_limit = len(self.streams) * 2
 		PCASystem.LOGGER.info('Starting stream-controller')
 		sc_process = Process(target=self.stream_controller.run, name='SC process', args=(queue, sc_message_limit,))
-		processes.append(sc_process)
 		sc_process.start()
+		return sc_process
 
-		# starting Stream processes
+	@staticmethod
+	def prepare_shared_manager(producers: set):
+		"""
+		Prepares the shared data manager for use
+		:param producers: set of Producer instances
+		:return: manager
+		"""
+
+		PCASystem.LOGGER.info('Number of different producers: ' + str(len(producers)))
+		for producer in producers:
+			producer.register_shared_data_proxy()
+
+		manager = ProducerDataManager()
+		manager.start()
+		PCASystem.LOGGER.info('ProducerDataManager started')
+
+		return manager
+
+	@staticmethod
+	def resurrect_producers(prod_to_proc: dict, prod_to_proxy: dict, stop_event: Event):
+		"""
+		Restarts processes that are not running
+		:param prod_to_proc: producer to process mapping
+		:param prod_to_proxy: producer to shared data proxy object mapping
+		:param stop_event: Event object for notification
+		"""
+		PCASystem.LOGGER.debug('Checking producer processes')
+		for prod, proc in prod_to_proc.items():
+			if not proc.is_alive():
+				PCASystem.LOGGER.info(prod.get_name() + ' process will be resurrected')
+				new_proc = Process(
+					target=prod.produce_data_loop,
+					name=prod.get_name(),
+					args=(prod_to_proxy[prod], stop_event, ))
+				prod_to_proc[prod] = new_proc
+				new_proc.start()
+
+	def run(self, stop_event: Event):
+		"""
+		This method starts the components in separate processes
+		and then waits for the stop event. Then it terminates the processes if necessary.
+		:param stop_event: Event object for notification
+		"""
+		self.validate()
+		stream_processes = []
+		prod_to_proc = {}
+		prod_to_proxy = {}
+		producer_set = set([s.producer() for s in self.streams])
+		queue = Queue()
+
+		# shared data manager
+		manager = PCASystem.prepare_shared_manager(producer_set)
+
+		# producers
+		for producer in producer_set:
+			prod_name = producer.get_name()
+			proxy = producer.create_shared_data_proxy(manager)
+
+			PCASystem.LOGGER.info('Starting producer: ' + prod_name)
+			proc = Process(target=producer.produce_data_loop, name=prod_name, args=(proxy, stop_event, ))
+
+			prod_to_proc[producer] = proc
+			prod_to_proxy[producer] = proxy
+
+			proc.start()
+
+		# stream controller
+		sc_process = self.start_stream_controller(queue)
+
+		# streams
 		for stream in self.streams:
 			PCASystem.LOGGER.info('Starting stream: ' + stream.name)
-			process = Process(target=stream.run, name=stream.name, args=(queue,))
-			processes.append(process)
+			process = Process(
+				target=stream.run,
+				name=stream.name,
+				args=(queue, prod_to_proxy[stream.producer()], ))
+
+			stream_processes.append(process)
 			process.start()
 
-		while self.enabled:
-			# wait for an event
-			event.wait()
-			PCASystem.LOGGER.debug('Event arrived')
+		# wait for the stop event and periodically check the producers
+		while not stop_event.is_set():
+			stop_event.wait(timeout=PCASystem.POLLING_INTERVAL)
+			PCASystem.resurrect_producers(prod_to_proc, prod_to_proxy, stop_event)
 
-			if not self.enabled:
-				PCASystem.LOGGER.debug('Number of processes to be stopped: ' + str(len(processes)))
-				for process in processes:
-					process.terminate()
-				PCASystem.LOGGER.info('Finished')
+		PCASystem.LOGGER.debug('Stop event arrived')
+
+		PCASystem.LOGGER.debug('Number of stream processes to be stopped: ' + str(len(stream_processes)))
+		for process in stream_processes:
+			process.terminate()
+
+		PCASystem.LOGGER.debug('Stopping stream controller')
+		sc_process.terminate()
+
+		PCASystem.LOGGER.debug('Waiting for producers')
+		time.sleep(PCASystem.TIMEOUT)
+		for prod, proc in prod_to_proc.items():
+			proc.terminate()
+
+		PCASystem.LOGGER.info('Finished')
