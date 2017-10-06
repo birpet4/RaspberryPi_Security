@@ -14,10 +14,10 @@ class TestConsumer(Consumer):
 		return 'TestConsumer'
 
 	def run(self, context: ConsumerContext):
-		if context.alert:
-			TestConsumer.LOGGER.info('Sleeping now')
-			time.sleep(5)
-			return context
+		TestConsumer.LOGGER.info('Sleeping now')
+		time.sleep(5)
+		if 10 <= int(context.data):
+			return ConsumerContext('DATA reached 10', True)
 		else:
 			return ConsumerContext('data', False)
 
