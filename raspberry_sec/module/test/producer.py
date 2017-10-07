@@ -39,7 +39,7 @@ class TestProducer(Producer):
 
 	def get_data(self, data_proxy: ProducerDataProxy):
 		TestProducer.LOGGER.debug('Producer called')
-		time.sleep(1)
+		time.sleep(TestProducer.SLEEP_INTERVAL)
 		data = data_proxy.get_data()
 		TestProducer.LOGGER.debug(data)
 		return data

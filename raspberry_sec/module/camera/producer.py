@@ -1,7 +1,6 @@
 from raspberry_sec.interface.producer import Producer, ProducerDataManager, ProducerDataProxy, Type
 from multiprocessing import Event
 import logging
-import cv2
 
 
 class CameraProducerDataProxy(ProducerDataProxy):
@@ -16,7 +15,7 @@ class CameraProducer(Producer):
 	Class for producing camera sample data
 	"""
 	LOGGER = logging.getLogger('CameraProducer')
-	INTERVAL = 100
+	WAIT_KEY_INTERVAL = 100
 	DEVICE = 0
 
 	def __init__(self):
@@ -33,7 +32,7 @@ class CameraProducer(Producer):
 		try:
 			cam = cv2.VideoCapture(CameraProducer.DEVICE)
 			if not cam.isOpened():
-				CameraProducer.LOGGER.error('Cannot capture device: ' + CameraProducer.DEVICE)
+				CameraProducer.LOGGER.error('Cannot capture device: ' + str(CameraProducer.DEVICE))
 				return
 
 			while not stop_event.is_set():
@@ -42,7 +41,7 @@ class CameraProducer(Producer):
 					data_proxy.set_data(img)
 				else:
 					CameraProducer.LOGGER.warning('Could not capture image')
-				cv2.waitKey(CameraProducer.INTERVAL)
+				cv2.waitKey(CameraProducer.WAIT_KEY_INTERVAL)
 		finally:
 			CameraProducer.LOGGER.debug('Stopping capturing images')
 			cam.release()
