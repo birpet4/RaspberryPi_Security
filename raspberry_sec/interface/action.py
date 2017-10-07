@@ -1,3 +1,15 @@
+class ActionMessage:
+	"""
+	Class for holding Action alert details
+	"""
+	def __init__(self, data):
+		"""
+		Constructor
+		:param data: alert detail
+		"""
+		self.data = data
+
+
 class Action:
 	"""
 	Base class for alerting
@@ -8,10 +20,10 @@ class Action:
 		"""
 		pass
 
-	def fire(self, msg: str):
+	def fire(self, msg: list):
 		"""
 		Alert functionality
-		:param msg: textual content
+		:param msg: list of ActionMessage instances
 		"""
 		pass
 

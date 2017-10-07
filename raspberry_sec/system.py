@@ -7,6 +7,7 @@ from threading import Event
 from concurrent.futures import ThreadPoolExecutor
 from raspberry_sec.interface.consumer import ConsumerContext
 from raspberry_sec.interface.producer import ProducerDataProxy, ProducerDataManager
+from raspberry_sec.interface.action import ActionMessage
 
 
 class Stream:
@@ -77,7 +78,7 @@ class Stream:
 				Stream.LOGGER.debug(self.name + ' calling producer')
 				data = producer.get_data(producer_data_proxy)
 
-				context = ConsumerContext(data, True)
+				context = ConsumerContext(data, False)
 				for consumer in consumers:
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
 					context = consumer.run(context)
@@ -93,11 +94,11 @@ class StreamControllerMessage:
 	Class for managing notifications in case of alerts.
 	@see raspberry_sec.interface.action.Action
 	"""
-	def __init__(self, _alert: bool, _msg: str, _sender: str):
+	def __init__(self, _alert: bool, _msg, _sender: str):
 		"""
 		Constructor
 		:param _alert: True or False
-		:param _msg: textual content of the alert
+		:param _msg: content of the alert
 		:param _sender: name of the stream that sent this message
 		"""
 		self.alert = _alert
@@ -134,7 +135,7 @@ class StreamController:
 			StreamController.LOGGER.error('Could not evaluate the query: ' + query)
 			return False
 
-	def decide_alert(self, messages: list()):
+	def decide_alert(self, messages: list):
 		"""
 		This method decides based on a list of messages
 		whether to alert or not. For that it puts together a logical
@@ -143,26 +144,25 @@ class StreamController:
 		:return: decision (True/False) and alert data
 		"""
 		query = self.query
-		alert_data_list = []
+		action_messages = []
 
 		# iterating through every alert message
 		for sender, msg_iter in groupby(messages, lambda m: m.sender):
 			msg_list = list(msg_iter)
 			StreamController.LOGGER.debug(sender + ' sent ' + str(len(msg_list)) + ' messages')
 
-			alert_messages = [msg for msg in msg_list if msg.alert]
-			if alert_messages:
-				StreamController.LOGGER.debug(sender + ' reported ' + str(len(alert_messages)) + ' alerts')
-				alert_data_list = alert_data_list + [am.msg for am in alert_messages]
+			sc_messages = [msg for msg in msg_list if msg.alert]
+			if sc_messages:
+				StreamController.LOGGER.debug(sender + ' reported ' + str(len(sc_messages)) + ' alerts')
+				action_messages += [ActionMessage(scm.msg) for scm in sc_messages]
 				query = query.replace('@' + sender.upper() + '@', 'True')
 			else:
 				query = query.replace('@' + sender.upper() + '@', 'False')
 
 		# making sure no placeholder remains in query
 		query = re.sub(pattern=StreamController.PLACEHOLDER_PATTERN, repl='False', string=query)
-		alert_data = '; '.join(alert_data_list)
 
-		return StreamController.evaluate_query(query), alert_data
+		return StreamController.evaluate_query(query), action_messages
 
 	def run(self, queue: Queue, limit: int):
 		"""
@@ -187,11 +187,11 @@ class StreamController:
 					count += 1
 
 				# process messages
-				alert, data = self.decide_alert(messages)
+				alert, action_messages = self.decide_alert(messages)
 
 				# alert
 				if alert:
-					executor.submit(action.fire, data)
+					executor.submit(action.fire, action_messages)
 
 				time.sleep(StreamController.POLLING_INTERVAL)
 
@@ -201,7 +201,7 @@ class PCASystem:
 	Class for hosting the components. Serves as a container.
 	"""
 	LOGGER = logging.getLogger('PCASystem')
-	TIMEOUT = 1
+	TIMEOUT = 2
 	POLLING_INTERVAL = 2
 
 	def __init__(self):
@@ -233,9 +233,13 @@ class PCASystem:
 		:return: newly created process
 		"""
 		sc_message_limit = len(self.streams) * 2
-		PCASystem.LOGGER.info('Starting stream-controller')
-		sc_process = Process(target=self.stream_controller.run, name='SC process', args=(queue, sc_message_limit,))
+		sc_process = Process(
+			target=self.stream_controller.run,
+			name='SC process',
+			args=(queue, sc_message_limit,))
 		sc_process.start()
+		PCASystem.LOGGER.info('Stream-controller started')
+
 		return sc_process
 
 	@staticmethod
@@ -245,7 +249,6 @@ class PCASystem:
 		:param producers: set of Producer instances
 		:return: manager
 		"""
-
 		PCASystem.LOGGER.info('Number of different producers: ' + str(len(producers)))
 		for producer in producers:
 			producer.register_shared_data_proxy()
@@ -278,12 +281,15 @@ class PCASystem:
 	def run(self, stop_event: Event):
 		"""
 		This method starts the components in separate processes
-		and then waits for the stop event. Then it terminates the processes if necessary.
+		and then waits for the stop event. It then terminates the processes if necessary.
 		:param stop_event: Event object for notification
 		"""
 		self.validate()
+
 		stream_processes = []
+		# producer-to-process mapping
 		prod_to_proc = {}
+		# producer-to-shared data proxy mapping
 		prod_to_proxy = {}
 		producer_set = set([s.producer() for s in self.streams])
 		queue = Queue()
@@ -291,23 +297,26 @@ class PCASystem:
 		# shared data manager
 		manager = PCASystem.prepare_shared_manager(producer_set)
 
-		# producers
+		# start producer processes
 		for producer in producer_set:
 			prod_name = producer.get_name()
 			proxy = producer.create_shared_data_proxy(manager)
 
 			PCASystem.LOGGER.info('Starting producer: ' + prod_name)
-			proc = Process(target=producer.produce_data_loop, name=prod_name, args=(proxy, stop_event, ))
+			proc = Process(
+				target=producer.produce_data_loop,
+				name=prod_name,
+				args=(proxy, stop_event, ))
 
 			prod_to_proc[producer] = proc
 			prod_to_proxy[producer] = proxy
 
 			proc.start()
 
-		# stream controller
+		# start stream controller process
 		sc_process = self.start_stream_controller(queue)
 
-		# streams
+		# start stream processes
 		for stream in self.streams:
 			PCASystem.LOGGER.info('Starting stream: ' + stream.name)
 			process = Process(
@@ -333,8 +342,7 @@ class PCASystem:
 		sc_process.terminate()
 
 		PCASystem.LOGGER.debug('Waiting for producers')
-		time.sleep(PCASystem.TIMEOUT)
 		for prod, proc in prod_to_proc.items():
-			proc.terminate()
+			proc.join()
 
 		PCASystem.LOGGER.info('Finished')

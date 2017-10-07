@@ -18,19 +18,19 @@ class EmailAction(Action):
 	def get_name(self):
 		return 'EmailAction'
 
-	def fire(self, msg: str):
+	def fire(self, msg: list):
 		"""
 		This method sends an email with the content set to the msg.
-		:param msg: email content
+		:param msg: ActionMessage-s
 		"""
-		EmailAction.LOGGER.info('Action fired: ' + msg)
+		EmailAction.LOGGER.info('Action fired:')
 
 		mail = "\n".join([
 			'From: ' + EmailAction.FROM_ADDR,
 			'To: ' + EmailAction.TO_ADDR,
 			'Subject: RaspberryPi ALERT',
 			'',
-			msg
+			'; '.join([m.data for m in msg])
 		])
 
 		try:
@@ -39,6 +39,6 @@ class EmailAction(Action):
 				server.starttls()
 				server.login(EmailAction.USER, EmailAction.PASSWORD)
 				server.sendmail(EmailAction.FROM_ADDR, EmailAction.TO_ADDR, mail)
-			EmailAction.LOGGER.info('Email has been successfully dispatched')
+			EmailAction.LOGGER.info('Email has been successfully sent')
 		except Exception:
-			EmailAction.LOGGER.error('Email could not be dispatched')
+			EmailAction.LOGGER.error('Email could not be sent')

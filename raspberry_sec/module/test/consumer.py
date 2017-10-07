@@ -14,8 +14,9 @@ class TestConsumer(Consumer):
 		return 'TestConsumer'
 
 	def run(self, context: ConsumerContext):
-		TestConsumer.LOGGER.info('Sleeping now')
+		TestConsumer.LOGGER.info('Working...')
 		time.sleep(5)
+		TestConsumer.LOGGER.info('Done...')
 		if 10 <= int(context.data):
 			return ConsumerContext('DATA reached 10', True)
 		else:

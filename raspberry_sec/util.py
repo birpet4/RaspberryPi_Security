@@ -86,7 +86,7 @@ class PCALoader(Loader):
 	@staticmethod
 	def filter_for_allowed_modules(modules: list):
 		"""
-		This method lists the input based on preconfigured settings.
+		This method filters the input based on preconfigured settings.
 		Only Action, Producer, Consumer classes can be loaded from specific modules.
 		:param modules: modules to be used by the system
 		:return: filtered list
@@ -126,8 +126,8 @@ class PCALoader(Loader):
 
 		for _class in classes:
 			try:
-				PCALoader.LOGGER.info('Loading: ' + _class)
 				loaded_class = DynamicLoader.load_class(_class)
+				PCALoader.LOGGER.info('Loaded: ' + _class)
 				for key in self.loaded_classes.keys():
 					if issubclass(loaded_class, key):
 						self.loaded_classes[key][loaded_class.__name__] = loaded_class
@@ -137,19 +137,19 @@ class PCALoader(Loader):
 
 	def get_actions(self):
 		"""
-		:return: Action class list
+		:return: Action class dictionary
 		"""
 		return self.loaded_classes[Action]
 
 	def get_producers(self):
 		"""
-		:return: Producer class list
+		:return: Producer class dictionary
 		"""
 		return self.loaded_classes[Producer]
 
 	def get_consumers(self):
 		"""
-		:return: Consumer class list
+		:return: Consumer class dictionary
 		"""
 		return self.loaded_classes[Consumer]
 
@@ -233,7 +233,7 @@ class PCASystemJSONDecoder(JSONDecoder):
 			with open(config_path, 'r') as configfile:
 				return json.load(fp=configfile, cls=PCASystemJSONDecoder)
 		else:
-			PCASystemJSONDecoder.LOGGER.warning('Config-path was not given, returning empty object')
+			PCASystemJSONDecoder.LOGGER.warning('Config-path was not given, returning empty system')
 			return PCASystem()
 
 	def object_hook(self, obj_dict):
@@ -257,7 +257,7 @@ class PCASystemJSONDecoder(JSONDecoder):
 				new_stream.consumers = [loaded_consumers[cons] for cons in obj_dict['consumers']]
 				return new_stream
 			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load Stream-s in JSON')
+				PCASystemJSONDecoder.LOGGER.error('Cannot load Stream-s from JSON')
 				raise
 
 		# PCASystem object
@@ -268,26 +268,26 @@ class PCASystemJSONDecoder(JSONDecoder):
 					for name in obj_dict['actions']:
 						pca_system.actions[name] = loaded_actions[name]
 				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Action-s in JSON')
+					PCASystemJSONDecoder.LOGGER.error('Cannot find Action-s from JSON')
 
 				try:
 					for name in obj_dict['producers']:
 						pca_system.producers[name] = loaded_producers[name]
 				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Producer-s in JSON')
+					PCASystemJSONDecoder.LOGGER.error('Cannot find Producer-s from JSON')
 
 				try:
 					for name in obj_dict['consumers']:
 						pca_system.consumers[name] = loaded_consumers[name]
 				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Consumer-s in JSON')
+					PCASystemJSONDecoder.LOGGER.error('Cannot find Consumer-s from JSON')
 
 				pca_system.stream_controller = obj_dict['stream_controller']
 				pca_system.streams = obj_dict['streams']
 
 				return pca_system
 			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load PCASystem in JSON')
+				PCASystemJSONDecoder.LOGGER.error('Cannot load PCASystem from JSON')
 				raise
 
 		# StreamController object
@@ -298,7 +298,7 @@ class PCASystemJSONDecoder(JSONDecoder):
 				stream_controller.action = loaded_actions[obj_dict['action']]
 				return stream_controller
 			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load StreamController in JSON')
+				PCASystemJSONDecoder.LOGGER.error('Cannot load StreamController from JSON')
 				raise
 
 		# Default

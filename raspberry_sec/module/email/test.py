@@ -1,4 +1,5 @@
 from raspberry_sec.module.email.action import EmailAction
+from raspberry_sec.interface.action import ActionMessage
 
 
 def integration_test():
@@ -6,7 +7,7 @@ def integration_test():
 	email_action = EmailAction()
 
 	# When
-	email_action.fire('TEST Message')
+	email_action.fire([ActionMessage('TEST Message')])
 
 
 if __name__ == '__main__':
