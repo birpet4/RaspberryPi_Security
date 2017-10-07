@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # ---------------------------------------------
 echo '=== Compilation of source files'
 errors=0
