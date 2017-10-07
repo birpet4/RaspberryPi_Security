@@ -16,6 +16,7 @@ class CameraProducer(Producer):
 	"""
 	LOGGER = logging.getLogger('CameraProducer')
 	WAIT_KEY_INTERVAL = 100
+	UNSUCCESSFUL_LIMIT = 50
 	DEVICE = 0
 
 	def __init__(self):
@@ -35,12 +36,18 @@ class CameraProducer(Producer):
 				CameraProducer.LOGGER.error('Cannot capture device: ' + str(CameraProducer.DEVICE))
 				return
 
+			unsuccessful_images = 0
 			while not stop_event.is_set():
 				ret_val, img = cam.read()
 				if ret_val:
 					data_proxy.set_data(img)
 				else:
+					unsuccessful_images += 1
 					CameraProducer.LOGGER.warning('Could not capture image')
+					# if too many errors happened we rather kill this process later
+					if unsuccessful_images == CameraProducer.UNSUCCESSFUL_LIMIT:
+						break
+
 				cv2.waitKey(CameraProducer.WAIT_KEY_INTERVAL)
 		finally:
 			CameraProducer.LOGGER.debug('Stopping capturing images')

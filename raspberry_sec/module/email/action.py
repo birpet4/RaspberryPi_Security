@@ -1,11 +1,13 @@
 import logging
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from raspberry_sec.interface.action import Action
 
 
 class EmailAction(Action):
 	"""
-	Action class for sending emails
+	Action class for sending emails (with HTML content)
 	"""
 	LOGGER = logging.getLogger('EmailAction')
 	FROM_ADDR = 'mt.raspberry.pi@gmail.com'
@@ -25,20 +27,20 @@ class EmailAction(Action):
 		"""
 		EmailAction.LOGGER.info('Action fired:')
 
-		mail = "\n".join([
-			'From: ' + EmailAction.FROM_ADDR,
-			'To: ' + EmailAction.TO_ADDR,
-			'Subject: RaspberryPi ALERT',
-			'',
-			'; '.join([m.data for m in msg])
-		])
+		mail = MIMEMultipart('alternative')
+		mail['From'] = EmailAction.FROM_ADDR
+		mail['To'] = EmailAction.TO_ADDR
+		mail['Subject'] = 'RaspberryPi ALERT'
+
+		content = ''.join([m.data for m in msg])
+		mail.attach(MIMEText('<html>' + content + '</html>', 'html'))
 
 		try:
 			with smtplib.SMTP(host=EmailAction.SMTP_ADDR, timeout=EmailAction.SMTP_TIMEOUT) as server:
 				server.ehlo()
 				server.starttls()
 				server.login(EmailAction.USER, EmailAction.PASSWORD)
-				server.sendmail(EmailAction.FROM_ADDR, EmailAction.TO_ADDR, mail)
+				server.sendmail(EmailAction.FROM_ADDR, EmailAction.TO_ADDR, mail.as_string())
 			EmailAction.LOGGER.info('Email has been successfully sent')
 		except Exception:
 			EmailAction.LOGGER.error('Email could not be sent')
