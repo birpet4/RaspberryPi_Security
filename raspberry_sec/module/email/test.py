@@ -7,7 +7,9 @@ def integration_test():
 	email_action = EmailAction()
 
 	# When
-	email_action.fire([ActionMessage('TEST Message')])
+	email_action.fire([
+		ActionMessage('<p><b>TEST</b> Message1</p>'),
+		ActionMessage('<p><a href="www.google.com">TEST</a> Message2</p>')])
 
 
 if __name__ == '__main__':
