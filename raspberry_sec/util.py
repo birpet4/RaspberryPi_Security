@@ -1,13 +1,72 @@
 import importlib
 import pkgutil
 import logging
-import json
-from json import JSONEncoder
-from json import JSONDecoder
-from raspberry_sec.interface.producer import Producer
-from raspberry_sec.interface.consumer import Consumer
-from raspberry_sec.interface.action import Action
-from raspberry_sec.system import PCASystem, StreamController, Stream
+from multiprocessing import Queue, Event
+
+
+class QueueHandler(logging.Handler):
+	"""
+	This is a logging handler which sends events to a multiprocessing queue.
+	"""
+	def __init__(self, queue):
+		"""
+		Constructor
+		"""
+		logging.Handler.__init__(self)
+		self.queue = queue
+
+	def emit(self, record):
+		"""
+		Writes the LogRecord into the queue.
+		"""
+		try:
+			self.queue.put_nowait(record)
+		except:
+			self.handleError(record)
+
+	def get_name(self):
+		"""
+		:return: name of the object
+		"""
+		return 'QueueHandler'
+
+	def __eq__(self, other):
+		"""
+		:param other object
+		:return: True or False depending on the name
+		"""
+		return self.get_name() == other.get_name()
+
+	def __hash__(self):
+		"""
+		:return: hash code
+		"""
+		return hash(self.get_name())
+
+
+class LogQueueListener:
+	"""
+	Class representing a listener that should run in a separate process.
+	This will listen to a queue (log-queue) and take care of the log records
+	in a safe manner (inter-process communication).
+	"""
+	def __init__(self, _format: str, _level: int=logging.DEBUG):
+		self.format = _format
+		self.level = _level
+
+	def run(self, logging_queue: Queue):
+		"""
+		This method is a loop that listens for incoming records.
+		:param logging_queue: log-record queue
+		"""
+		logging.basicConfig(format=self.format, level=self.level)
+		while True:
+			try:
+				record = logging_queue.get()
+				logger = logging.getLogger(record.name)
+				logger.handle(record)
+			except:
+				raise
 
 
 class Loader:
@@ -68,239 +127,54 @@ class DynamicLoader:
 		return modules
 
 
-class PCALoader(Loader):
+class ProcessContext:
 	"""
-	Implementation of Loader, that is capable of loading a PCASystem from the package system.
+	Container for tools that might be needed when running
+	in a separate process.
 	"""
-	LOGGER = logging.getLogger('PCALoader')
-	module_package = 'raspberry_sec.module'
-	allowed_modules = set(['action', 'consumer','producer'])
-	loaded_classes = {Action: {}, Consumer: {}, Producer: {}}
-
-	def __init__(self):
+	def __init__(self, log_queue: Queue, stop_event: Event, **kwargs):
 		"""
 		Constructor
+		:param log_queue: queue for the new process to log into
+		:param stop_event: Event object for being notified if needed
+		:param other: anything else that might be needed (child specific data)
 		"""
-		self.load()
+		self.logging_queue = log_queue
+		self.stop_event = stop_event
+		self.kwargs = kwargs
 
-	@staticmethod
-	def filter_for_allowed_modules(modules: list):
+	def get_prop(self, name: str):
 		"""
-		This method filters the input based on preconfigured settings.
-		Only Action, Producer, Consumer classes can be loaded from specific modules.
-		:param modules: modules to be used by the system
-		:return: filtered list
+		Returns the property if exists among the key-word arguments
+		:param name: name of the property
+		:return: the property value
 		"""
-		filtered_modules = []
-		for _module in modules:
-			module_name = _module.split('.')[-1]
-			if module_name in PCALoader.allowed_modules:
-				filtered_modules.append(_module)
-
-		PCALoader.LOGGER.debug('These modules were filtered out: ' + str(set(modules) - set(filtered_modules)))
-		return filtered_modules
-
-	@staticmethod
-	def generate_class_names(modules: list):
-		"""
-		Based on predefined rules it generates class names to be loaded.
-		E.g. xxx.yyy.test.consumer --> xxx.yyy.test.consumer.TestConsumer
-		:param modules: list of modules
-		:return: list of class names generated from the input
-		"""
-		class_names = []
-		for _module in modules:
-			_module_parts = _module.split('.')
-			module_name = _module_parts[-1]
-			package_name = _module_parts[-2]
-			class_names.append('.'.join([_module, package_name.capitalize() + module_name.capitalize()]))
-		return class_names
-
-	def load(self):
-		"""
-		Loads and stores the newly loaded class objects
-		"""
-		modules = DynamicLoader.list_modules(PCALoader.module_package)
-		modules = PCALoader.filter_for_allowed_modules(modules)
-		classes = PCALoader.generate_class_names(modules)
-
-		for _class in classes:
-			try:
-				loaded_class = DynamicLoader.load_class(_class)
-				PCALoader.LOGGER.info('Loaded: ' + _class)
-				for key in self.loaded_classes.keys():
-					if issubclass(loaded_class, key):
-						self.loaded_classes[key][loaded_class.__name__] = loaded_class
-						break
-			except ImportError:
-				PCALoader.LOGGER.error(_class + ' - Cannot be imported')
-
-	def get_actions(self):
-		"""
-		:return: Action class dictionary
-		"""
-		return self.loaded_classes[Action]
-
-	def get_producers(self):
-		"""
-		:return: Producer class dictionary
-		"""
-		return self.loaded_classes[Producer]
-
-	def get_consumers(self):
-		"""
-		:return: Consumer class dictionary
-		"""
-		return self.loaded_classes[Consumer]
+		return self.kwargs[name]
 
 
-class PCASystemJSONEncoder(JSONEncoder):
+class ProcessReady:
 	"""
-	Encodes objects to JSON
+	Base class for providing common interface for classes
+	that are able to run on their own (in separate processes)
 	"""
-	LOGGER = logging.getLogger('PCASystemJSONEncoder')
-	TYPE = '__type__'
-
 	@staticmethod
-	def save_config(pca_system: PCASystem, config_path: str):
+	def setup_logging(log_queue: Queue):
+		handler = QueueHandler(log_queue)
+		root = logging.getLogger()
+		root.removeHandler(handler)
+		root.addHandler(handler)
+		root.setLevel(logging.DEBUG)
+
+	def start(self, context: ProcessContext):
 		"""
-		Using JSON serialization this method saves the system into a file
-		:param pca_system: to be serialized
-		:param config_path: file path to save it to
+		Common entry point for a new process
+		:param context: containing the arguments when creating a new process
 		"""
-		if not config_path:
-			config_path = 'config/pca_system.json'
-			PCASystemJSONEncoder.LOGGER.info('Config-path was not set, defaults to ' + config_path)
+		ProcessReady.setup_logging(context.logging_queue)
+		self.run(context)
 
-		parsed = json.loads(json.dumps(pca_system, cls=PCASystemJSONEncoder))
-		with open(config_path, 'w+') as configfile:
-			json.dump(fp=configfile, obj=parsed, indent=4, sort_keys=True)
-
-	def default(self, obj):
+	def run(self, context: ProcessContext):
 		"""
-		:param obj: to be serialized
-		:return: dictionary
+		Main functionality
 		"""
-		if isinstance(obj, Stream):
-			obj_dict = dict()
-			obj_dict['producer'] = obj.producer.__name__
-			obj_dict['consumers'] = [c.__name__ for c in obj.consumers]
-			obj_dict['name'] = obj.name
-			class_name = Stream.__name__
-		elif isinstance(obj, PCASystem):
-			obj_dict = dict()
-			obj_dict['actions'] = list(obj.actions.keys())
-			obj_dict['producers'] = list(obj.producers.keys())
-			obj_dict['consumers'] = list(obj.consumers.keys())
-			obj_dict['streams'] = list(obj.streams)
-			obj_dict['stream_controller'] = obj.stream_controller
-			class_name = PCASystem.__name__
-		elif isinstance(obj, StreamController):
-			obj_dict = dict()
-			obj_dict['query'] = obj.query
-			obj_dict['action'] = obj.action.__name__
-			class_name = StreamController.__name__
-		else:
-			return json.JSONEncoder.default(self, obj)
-
-		obj_dict.update({PCASystemJSONEncoder.TYPE: class_name})
-		return obj_dict
-
-
-class PCASystemJSONDecoder(JSONDecoder):
-	"""
-	Decodes JSON to objects
-	"""
-	LOGGER = logging.getLogger('PCASystemJSONDecoder')
-
-	def __init__(self, *args, **kwargs):
-		"""
-		Constructor
-		:param args:
-		:param kwargs:
-		"""
-		self.pca_loader = PCALoader()
-		json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
-
-	@staticmethod
-	def load_from_config(config_path: str):
-		"""
-		This method loads a PCASystem from a JSON file
-		:param config_path: file path
-		:return: read system object
-		"""
-		if config_path:
-			with open(config_path, 'r') as configfile:
-				return json.load(fp=configfile, cls=PCASystemJSONDecoder)
-		else:
-			PCASystemJSONDecoder.LOGGER.warning('Config-path was not given, returning empty system')
-			return PCASystem()
-
-	def object_hook(self, obj_dict):
-		"""
-		:param obj_dict:
-		:return:
-		"""
-		loaded_producers = self.pca_loader.get_producers()
-		loaded_consumers = self.pca_loader.get_consumers()
-		loaded_actions = self.pca_loader.get_actions()
-
-		# Unfamiliar object
-		if PCASystemJSONEncoder.TYPE not in obj_dict:
-			return obj_dict
-
-		# Stream object
-		elif obj_dict[PCASystemJSONEncoder.TYPE] == Stream.__name__:
-			try:
-				new_stream = Stream(_name=obj_dict['name'])
-				new_stream.producer = loaded_producers[obj_dict['producer']]
-				new_stream.consumers = [loaded_consumers[cons] for cons in obj_dict['consumers']]
-				return new_stream
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load Stream-s from JSON')
-				raise
-
-		# PCASystem object
-		elif obj_dict[PCASystemJSONEncoder.TYPE] == PCASystem.__name__:
-			try:
-				pca_system = PCASystem()
-				try:
-					for name in obj_dict['actions']:
-						pca_system.actions[name] = loaded_actions[name]
-				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Action-s from JSON')
-
-				try:
-					for name in obj_dict['producers']:
-						pca_system.producers[name] = loaded_producers[name]
-				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Producer-s from JSON')
-
-				try:
-					for name in obj_dict['consumers']:
-						pca_system.consumers[name] = loaded_consumers[name]
-				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Consumer-s from JSON')
-
-				pca_system.stream_controller = obj_dict['stream_controller']
-				pca_system.streams = obj_dict['streams']
-
-				return pca_system
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load PCASystem from JSON')
-				raise
-
-		# StreamController object
-		elif obj_dict[PCASystemJSONEncoder.TYPE] == StreamController.__name__:
-			try:
-				stream_controller = StreamController()
-				stream_controller.query = obj_dict['query']
-				stream_controller.action = loaded_actions[obj_dict['action']]
-				return stream_controller
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load StreamController from JSON')
-				raise
-
-		# Default
-		else:
-			return {}
+		pass
