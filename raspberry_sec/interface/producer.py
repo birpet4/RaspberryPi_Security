@@ -1,5 +1,6 @@
 from multiprocessing import Event
 from multiprocessing.managers import BaseManager
+from raspberry_sec.util import ProcessContext, ProcessReady
 from enum import Enum
 
 
@@ -41,7 +42,7 @@ class ProducerDataProxy(object):
 		return self.data
 
 
-class Producer:
+class Producer(ProcessReady):
 	"""
 	Base class for producing sample data
 	"""
@@ -59,12 +60,11 @@ class Producer:
 		"""
 		pass
 
-	def produce_data_loop(self, data_proxy: ProducerDataProxy, stop_event: Event):
+	def run(self, context: ProcessContext):
 		"""
 		Generates data for the other producers of the same class.
 		This method finishes only in case of errors or if told explicitly.
-		:param data_proxy: shared data proxy
-		:param stop_event: producing should stop
+		:param context: Process context
 		"""
 		pass
 

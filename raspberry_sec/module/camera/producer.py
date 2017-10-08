@@ -1,6 +1,6 @@
-from raspberry_sec.interface.producer import Producer, ProducerDataManager, ProducerDataProxy, Type
-from multiprocessing import Event
 import logging
+from raspberry_sec.interface.producer import Producer, ProducerDataManager, ProducerDataProxy, Type
+from raspberry_sec.util import ProcessContext
 
 
 class CameraProducerDataProxy(ProducerDataProxy):
@@ -28,7 +28,7 @@ class CameraProducer(Producer):
 	def create_shared_data_proxy(self, manager: ProducerDataManager):
 		return manager.CameraProducerDataProxy()
 
-	def produce_data_loop(self, data_proxy: ProducerDataProxy, stop_event: Event):
+	def produce_data_loop(self, context: ProcessContext):
 		import cv2
 		try:
 			cam = cv2.VideoCapture(CameraProducer.DEVICE)
@@ -37,7 +37,9 @@ class CameraProducer(Producer):
 				return
 
 			unsuccessful_images = 0
-			while not stop_event.is_set():
+			data_proxy = context.get_prop('shared_data_proxy')
+
+			while not context.stop_event.is_set():
 				ret_val, img = cam.read()
 				if ret_val:
 					data_proxy.set_data(img)

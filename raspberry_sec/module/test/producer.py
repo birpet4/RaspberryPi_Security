@@ -1,7 +1,7 @@
 import logging
 import time
-from multiprocessing import Event
 from raspberry_sec.interface.producer import Producer, ProducerDataProxy, ProducerDataManager, Type
+from raspberry_sec.util import ProcessContext
 
 
 class TestDataProxy(ProducerDataProxy):
@@ -26,9 +26,11 @@ class TestProducer(Producer):
 		TestProducer.LOGGER.debug('Created shared data')
 		return manager.TestDataProxy()
 
-	def produce_data_loop(self, data_proxy: ProducerDataProxy, stop_event: Event):
+	def run(self, context: ProcessContext):
 		count = 1
-		while not stop_event.is_set():
+		data_proxy = context.get_prop('shared_data_proxy')
+
+		while not context.stop_event.is_set():
 			TestProducer.LOGGER.debug('Producer Loop iteration')
 			time.sleep(TestProducer.SLEEP_INTERVAL)
 			data_proxy.set_data(str(count))
