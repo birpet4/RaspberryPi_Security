@@ -306,35 +306,59 @@ class PCASystemJSONEncoder(JSONEncoder):
 		with open(config_path, 'w+') as configfile:
 			json.dump(fp=configfile, obj=parsed, indent=4, sort_keys=True)
 
+	@staticmethod
+	def stream_to_dict(obj: Stream):
+		"""
+		:param obj: Stream object
+		:return: dict version of the input
+		"""
+		obj_dict = dict()
+		obj_dict['producer'] = obj.producer.__name__
+		obj_dict['consumers'] = [c.__name__ for c in obj.consumers]
+		obj_dict['name'] = obj.name
+		obj_dict[PCASystemJSONEncoder.TYPE] = Stream.__name__
+		return obj_dict
+
+	@staticmethod
+	def pcasystem_to_dict(obj: PCASystem):
+		"""
+		:param obj: PCASystem object
+		:return: dict version of the input
+		"""
+		obj_dict = dict()
+		obj_dict['actions'] = list(obj.actions.keys())
+		obj_dict['producers'] = list(obj.producers.keys())
+		obj_dict['consumers'] = list(obj.consumers.keys())
+		obj_dict['streams'] = list(obj.streams)
+		obj_dict['stream_controller'] = obj.stream_controller
+		obj_dict[PCASystemJSONEncoder.TYPE] = PCASystem.__name__
+		return obj_dict
+
+	@staticmethod
+	def streamcontroller_to_dict(obj: StreamController):
+		"""
+		:param obj: StreamController object
+		:return: dict version of the input
+		"""
+		obj_dict = dict()
+		obj_dict['query'] = obj.query
+		obj_dict['action'] = obj.action.__name__
+		obj_dict[PCASystemJSONEncoder.TYPE] = StreamController.__name__
+		return obj_dict
+
 	def default(self, obj):
 		"""
 		:param obj: to be serialized
 		:return: dictionary
 		"""
 		if isinstance(obj, Stream):
-			obj_dict = dict()
-			obj_dict['producer'] = obj.producer.__name__
-			obj_dict['consumers'] = [c.__name__ for c in obj.consumers]
-			obj_dict['name'] = obj.name
-			class_name = Stream.__name__
+			return PCASystemJSONEncoder.stream_to_dict(obj)
 		elif isinstance(obj, PCASystem):
-			obj_dict = dict()
-			obj_dict['actions'] = list(obj.actions.keys())
-			obj_dict['producers'] = list(obj.producers.keys())
-			obj_dict['consumers'] = list(obj.consumers.keys())
-			obj_dict['streams'] = list(obj.streams)
-			obj_dict['stream_controller'] = obj.stream_controller
-			class_name = PCASystem.__name__
+			return PCASystemJSONEncoder.pcasystem_to_dict(obj)
 		elif isinstance(obj, StreamController):
-			obj_dict = dict()
-			obj_dict['query'] = obj.query
-			obj_dict['action'] = obj.action.__name__
-			class_name = StreamController.__name__
+			return PCASystemJSONEncoder.streamcontroller_to_dict(obj)
 		else:
 			return json.JSONEncoder.default(self, obj)
-
-		obj_dict.update({PCASystemJSONEncoder.TYPE: class_name})
-		return obj_dict
 
 
 class PCASystemJSONDecoder(JSONDecoder):
@@ -349,7 +373,11 @@ class PCASystemJSONDecoder(JSONDecoder):
 		:param args:
 		:param kwargs:
 		"""
-		self.pca_loader = PCALoader()
+		pca_loader = PCALoader()
+		self.loaded_producers = pca_loader.get_producers()
+		self.loaded_consumers = pca_loader.get_consumers()
+		self.loaded_actions = pca_loader.get_actions()
+
 		json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
 	@staticmethod
@@ -366,71 +394,83 @@ class PCASystemJSONDecoder(JSONDecoder):
 			PCASystemJSONDecoder.LOGGER.warning('Config-path was not given, returning empty system')
 			return PCASystem()
 
+	def stream_from_dict(self, obj_dict: dict):
+		"""
+		:param obj_dict: JSON structure
+		:return: Stream object
+		"""
+		try:
+			new_stream = Stream(_name=obj_dict['name'])
+			new_stream.producer = self.loaded_producers[obj_dict['producer']]
+			new_stream.consumers = [self.loaded_consumers[cons] for cons in obj_dict['consumers']]
+			return new_stream
+		except KeyError:
+			PCASystemJSONDecoder.LOGGER.error('Cannot load Stream-s from JSON')
+			raise
+
+	def streamcontroller_from_dict(self, obj_dict: dict):
+		"""
+		:param obj_dict: JSON structure
+		:return: StreamController object
+		"""
+		try:
+			stream_controller = StreamController()
+			stream_controller.query = obj_dict['query']
+			stream_controller.action = self.loaded_actions[obj_dict['action']]
+			return stream_controller
+		except KeyError:
+			PCASystemJSONDecoder.LOGGER.error('Cannot load StreamController from JSON')
+			raise
+
+	def pcasystem_from_dict(self, obj_dict: dict):
+		"""
+		:param obj_dict: JSON structure
+		:return: PCASystem object
+		"""
+		try:
+			pca_system = PCASystem()
+			try:
+				for name in obj_dict['actions']:
+					pca_system.actions[name] = self.loaded_actions[name]
+			except KeyError:
+				PCASystemJSONDecoder.LOGGER.error('Cannot find Action-s from JSON')
+
+			try:
+				for name in obj_dict['producers']:
+					pca_system.producers[name] = self.loaded_producers[name]
+			except KeyError:
+				PCASystemJSONDecoder.LOGGER.error('Cannot find Producer-s from JSON')
+
+			try:
+				for name in obj_dict['consumers']:
+					pca_system.consumers[name] = self.loaded_consumers[name]
+			except KeyError:
+				PCASystemJSONDecoder.LOGGER.error('Cannot find Consumer-s from JSON')
+
+			pca_system.stream_controller = obj_dict['stream_controller']
+			pca_system.streams = obj_dict['streams']
+			return pca_system
+		except KeyError:
+			PCASystemJSONDecoder.LOGGER.error('Cannot load PCASystem from JSON')
+			raise
+
 	def object_hook(self, obj_dict):
 		"""
-		:param obj_dict:
-		:return:
+		:param obj_dict: JSON structure
+		:return: object equivalent
 		"""
-		loaded_producers = self.pca_loader.get_producers()
-		loaded_consumers = self.pca_loader.get_consumers()
-		loaded_actions = self.pca_loader.get_actions()
-
 		# Unfamiliar object
 		if PCASystemJSONEncoder.TYPE not in obj_dict:
 			return obj_dict
-
 		# Stream object
 		elif obj_dict[PCASystemJSONEncoder.TYPE] == Stream.__name__:
-			try:
-				new_stream = Stream(_name=obj_dict['name'])
-				new_stream.producer = loaded_producers[obj_dict['producer']]
-				new_stream.consumers = [loaded_consumers[cons] for cons in obj_dict['consumers']]
-				return new_stream
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load Stream-s from JSON')
-				raise
-
+			return self.stream_from_dict(obj_dict)
 		# PCASystem object
 		elif obj_dict[PCASystemJSONEncoder.TYPE] == PCASystem.__name__:
-			try:
-				pca_system = PCASystem()
-				try:
-					for name in obj_dict['actions']:
-						pca_system.actions[name] = loaded_actions[name]
-				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Action-s from JSON')
-
-				try:
-					for name in obj_dict['producers']:
-						pca_system.producers[name] = loaded_producers[name]
-				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Producer-s from JSON')
-
-				try:
-					for name in obj_dict['consumers']:
-						pca_system.consumers[name] = loaded_consumers[name]
-				except KeyError:
-					PCASystemJSONDecoder.LOGGER.error('Cannot find Consumer-s from JSON')
-
-				pca_system.stream_controller = obj_dict['stream_controller']
-				pca_system.streams = obj_dict['streams']
-
-				return pca_system
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load PCASystem from JSON')
-				raise
-
+			return self.pcasystem_from_dict(obj_dict)
 		# StreamController object
 		elif obj_dict[PCASystemJSONEncoder.TYPE] == StreamController.__name__:
-			try:
-				stream_controller = StreamController()
-				stream_controller.query = obj_dict['query']
-				stream_controller.action = loaded_actions[obj_dict['action']]
-				return stream_controller
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot load StreamController from JSON')
-				raise
-
+			return self.streamcontroller_from_dict(obj_dict)
 		# Default
 		else:
 			return {}

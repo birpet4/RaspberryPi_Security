@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import time
-from threading import Thread
 from multiprocessing import Process, Event, Queue
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from raspberry_sec.pca import PCASystemJSONDecoder
