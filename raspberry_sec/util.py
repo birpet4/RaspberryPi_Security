@@ -24,6 +24,25 @@ class QueueHandler(logging.Handler):
 		except:
 			self.handleError(record)
 
+	def get_name(self):
+		"""
+		:return: name of the object
+		"""
+		return 'QueueHandler'
+
+	def __eq__(self, other):
+		"""
+		:param other object
+		:return: True or False depending on the name
+		"""
+		return self.get_name() == other.get_name()
+
+	def __hash__(self):
+		"""
+		:return: hash code
+		"""
+		return hash(self.get_name())
+
 
 class LogQueueListener:
 	"""
@@ -142,6 +161,7 @@ class ProcessReady:
 	def setup_logging(log_queue: Queue):
 		handler = QueueHandler(log_queue)
 		root = logging.getLogger()
+		root.removeHandler(handler)
 		root.addHandler(handler)
 		root.setLevel(logging.DEBUG)
 
