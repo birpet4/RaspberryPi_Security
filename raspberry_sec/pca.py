@@ -40,7 +40,7 @@ class PCASystem(ProcessReady):
 		if not self.streams:
 			PCASystem.LOGGER.warning('There are no streams configured')
 
-	def create_stream_controller(self, context: ProcessContext, queue: Queue):
+	def create_stream_controller_process(self, context: ProcessContext, queue: Queue):
 		"""
 		Starts the stream controller in a separate process
 		:param context: Process context
@@ -61,21 +61,26 @@ class PCASystem(ProcessReady):
 		)
 
 	@staticmethod
-	def prepare_shared_manager(producers: set):
+	def create_stream_process(context: ProcessContext, stream: Stream, proxy: ProducerDataProxy, sc_queue: Queue):
 		"""
-		Prepares the shared data manager for use
-		:param producers: set of Producer instances
-		:return: manager
+		Creates stream process
+		:param context: Process context
+		:param stream: Stream object
+		:param proxy: shared data proxy
+		:param sc_queue:  StreamController message queue
+		:return: newly created process
 		"""
-		PCASystem.LOGGER.info('Number of different producers: ' + str(len(producers)))
-		for producer in producers:
-			producer.register_shared_data_proxy()
-
-		manager = ProducerDataManager()
-		manager.start()
-		PCASystem.LOGGER.info('ProducerDataManager started')
-
-		return manager
+		s_context = ProcessContext(
+			log_queue=context.logging_queue,
+			stop_event=context.stop_event,
+			shared_data_proxy=proxy,
+			sc_queue=sc_queue
+		)
+		return Process(
+			target=stream.start,
+			name=stream.name,
+			args=(s_context,)
+		)
 
 	@staticmethod
 	def create_producer_process(context: ProcessContext, prod: Producer, proxy: ProducerDataProxy):
@@ -96,6 +101,23 @@ class PCASystem(ProcessReady):
 			name=prod.get_name(),
 			args=(new_context,)
 		)
+
+	@staticmethod
+	def prepare_shared_manager(producers: set):
+		"""
+		Prepares the shared data manager for use
+		:param producers: set of Producer instances
+		:return: manager
+		"""
+		PCASystem.LOGGER.info('Number of different producers: ' + str(len(producers)))
+		for producer in producers:
+			producer.register_shared_data_proxy()
+
+		manager = ProducerDataManager()
+		manager.start()
+		PCASystem.LOGGER.info('ProducerDataManager started')
+
+		return manager
 
 	@staticmethod
 	def resurrect_producers(context: ProcessContext, prod_to_proc: dict, prod_to_proxy: dict):
@@ -144,27 +166,16 @@ class PCASystem(ProcessReady):
 			proc.start()
 
 		# start stream controller process
-		sc_process = self.create_stream_controller(context, sc_queue)
+		sc_process = self.create_stream_controller_process(context, sc_queue)
 		PCASystem.LOGGER.info('Stream-controller started')
 		sc_process.start()
 
 		# start stream processes
 		for stream in self.streams:
+			s_process = PCASystem.create_stream_process(context, stream, prod_to_proxy[stream.producer()], sc_queue)
+			stream_processes.append(s_process)
 			PCASystem.LOGGER.info('Starting stream: ' + stream.name)
-			s_context = ProcessContext(
-				log_queue=context.logging_queue,
-				stop_event=context.stop_event,
-				shared_data_proxy=prod_to_proxy[stream.producer()],
-				sc_queue=sc_queue
-			)
-			process = Process(
-				target=stream.start,
-				name=stream.name,
-				args=(s_context, )
-			)
-
-			stream_processes.append(process)
-			process.start()
+			s_process.start()
 
 		# wait for the stop event and periodically check the producers
 		while not context.stop_event.is_set():
