@@ -34,7 +34,7 @@ def run_pcasystem():
 		pca_process = Process(target=pca_system.start, args=(process_context, ))
 		pca_process.start()
 
-		time.sleep(26)
+		input('Please press enter to exit...')
 	finally:
 		event.set()
 		time.sleep(4)
