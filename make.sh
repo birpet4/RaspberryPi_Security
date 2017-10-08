@@ -1,5 +1,5 @@
 #!/bin/bash
-exit 1
+
 
 # ---------------------------------------------
 echo '=== Compilation of source files'
