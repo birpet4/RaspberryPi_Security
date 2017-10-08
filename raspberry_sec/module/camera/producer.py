@@ -19,16 +19,13 @@ class CameraProducer(Producer):
 	UNSUCCESSFUL_LIMIT = 50
 	DEVICE = 0
 
-	def __init__(self):
-		pass
-
 	def register_shared_data_proxy(self):
 		ProducerDataManager.register('CameraProducerDataProxy', CameraProducerDataProxy)
 
 	def create_shared_data_proxy(self, manager: ProducerDataManager):
 		return manager.CameraProducerDataProxy()
 
-	def produce_data_loop(self, context: ProcessContext):
+	def run(self, context: ProcessContext):
 		import cv2
 		try:
 			cam = cv2.VideoCapture(CameraProducer.DEVICE)

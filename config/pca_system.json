@@ -21,18 +21,18 @@
     {
       "__type__": "Stream",
       "consumers": [
-        "TestConsumer"
+        "CameraConsumer"
       ],
       "name": "STREAM2",
-      "producer": "TestProducer"
+      "producer": "CameraProducer"
     },
     {
       "__type__": "Stream",
       "consumers": [
-        "TestConsumer"
+        "CameraConsumer"
       ],
       "name": "STREAM1",
-      "producer": "TestProducer"
+      "producer": "CameraProducer"
     }
   ]
 }
