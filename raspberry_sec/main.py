@@ -34,10 +34,10 @@ def run_pcasystem():
 		pca_process = Process(target=pca_system.start, args=(process_context, ))
 		pca_process.start()
 
-		time.sleep(30)
+		time.sleep(26)
 	finally:
 		event.set()
-		time.sleep(0.5)
+		time.sleep(4)
 		pca_process.terminate()
 		logging_process.terminate()
 
