@@ -9,7 +9,7 @@ class CameraConsumer(Consumer):
 	Consumer class for showing camera images
 	"""
 	LOGGER = logging.getLogger('CameraConsumer')
-	WAIT_KEY_TIMEOUT = 100
+	WAIT_KEY_TIMEOUT = 250
 
 	def get_name(self):
 		return 'CameraConsumer'

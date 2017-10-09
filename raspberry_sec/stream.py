@@ -85,8 +85,9 @@ class Stream(ProcessReady):
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
 					c_context = consumer.run(c_context)
 
-				Stream.LOGGER.debug(self.name + ' enqueueing controller message')
-				sc_queue.put(StreamControllerMessage(_alert=c_context.alert, _msg=c_context.data, _sender=self.name))
+				if c_context.alert:
+					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
+					sc_queue.put(StreamControllerMessage(_alert=c_context.alert, _msg=c_context.data, _sender=self.name))
 			except:
 				Stream.LOGGER.error('Something really bad happened')
 
