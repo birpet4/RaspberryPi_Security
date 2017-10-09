@@ -15,7 +15,7 @@ class EmailAction(Action):
 	SMTP_ADDR = 'smtp.gmail.com:587'
 	SMTP_TIMEOUT = 10
 	USER = 'mt.raspberry.pi'
-	PASSWORD = 'MT_raspberry'
+	PASSWORD = ''
 
 	def get_name(self):
 		return 'EmailAction'

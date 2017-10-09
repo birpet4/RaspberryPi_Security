@@ -1,38 +1,26 @@
 {
-  "__type__": "PCASystem",
-  "actions": [
-    "TestAction",
-    "EmailAction"
-  ],
-  "consumers": [
-    "TestConsumer",
-    "CameraConsumer"
-  ],
-  "producers": [
-    "TestProducer",
-    "CameraProducer"
-  ],
-  "stream_controller": {
-    "__type__": "StreamController",
-    "action": "TestAction",
-    "query": "@STREAM1@ and @STREAM2@"
-  },
-  "streams": [
-    {
-      "__type__": "Stream",
-      "consumers": [
-        "CameraConsumer"
-      ],
-      "name": "STREAM2",
-      "producer": "CameraProducer"
+    "__type__": "PCASystem",
+    "stream_controller": {
+        "__type__": "StreamController",
+        "action": "TestAction",
+        "query": "@STREAM1@ and @STREAM2@"
     },
-    {
-      "__type__": "Stream",
-      "consumers": [
-        "CameraConsumer"
-      ],
-      "name": "STREAM1",
-      "producer": "CameraProducer"
-    }
-  ]
+    "streams": [
+        {
+            "__type__": "Stream",
+            "consumers": [
+                "CameraConsumer"
+            ],
+            "name": "STREAM2",
+            "producer": "CameraProducer"
+        },
+        {
+            "__type__": "Stream",
+            "consumers": [
+                "CameraConsumer"
+            ],
+            "name": "STREAM1",
+            "producer": "CameraProducer"
+        }
+    ]
 }
