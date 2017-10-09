@@ -4,7 +4,7 @@ import logging
 import time
 from multiprocessing import Process, Event, Queue
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from raspberry_sec.pca import PCASystemJSONDecoder
+from raspberry_sec.pca import PCASystemJSONEncoder, PCASystemJSONDecoder
 from raspberry_sec.util import LogQueueListener, ProcessContext, ProcessReady
 
 
@@ -39,6 +39,9 @@ def run_pcasystem():
 		time.sleep(4)
 		pca_process.terminate()
 		logging_process.terminate()
+
+		# save config
+		PCASystemJSONEncoder.save_config(pca_system, '../config/pca_system.json')
 
 
 def main():

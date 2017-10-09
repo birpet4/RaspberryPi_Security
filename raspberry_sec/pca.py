@@ -326,9 +326,6 @@ class PCASystemJSONEncoder(JSONEncoder):
 		:return: dict version of the input
 		"""
 		obj_dict = dict()
-		obj_dict['actions'] = list(obj.actions.keys())
-		obj_dict['producers'] = list(obj.producers.keys())
-		obj_dict['consumers'] = list(obj.consumers.keys())
 		obj_dict['streams'] = list(obj.streams)
 		obj_dict['stream_controller'] = obj.stream_controller
 		obj_dict[PCASystemJSONEncoder.TYPE] = PCASystem.__name__
@@ -429,23 +426,9 @@ class PCASystemJSONDecoder(JSONDecoder):
 		"""
 		try:
 			pca_system = PCASystem()
-			try:
-				for name in obj_dict['actions']:
-					pca_system.actions[name] = self.loaded_actions[name]
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot find Action-s from JSON')
-
-			try:
-				for name in obj_dict['producers']:
-					pca_system.producers[name] = self.loaded_producers[name]
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot find Producer-s from JSON')
-
-			try:
-				for name in obj_dict['consumers']:
-					pca_system.consumers[name] = self.loaded_consumers[name]
-			except KeyError:
-				PCASystemJSONDecoder.LOGGER.error('Cannot find Consumer-s from JSON')
+			pca_system.actions = {a: a for a in self.loaded_actions}
+			pca_system.producers = {p: p for p in self.loaded_producers}
+			pca_system.consumers = {c: c for c in self.loaded_consumers}
 
 			pca_system.stream_controller = obj_dict['stream_controller']
 			pca_system.streams = obj_dict['streams']
