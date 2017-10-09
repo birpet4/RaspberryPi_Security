@@ -15,7 +15,7 @@ class CameraProducer(Producer):
 	Class for producing camera sample data
 	"""
 	LOGGER = logging.getLogger('CameraProducer')
-	WAIT_KEY_INTERVAL = 100
+	WAIT_KEY_INTERVAL = 250
 	UNSUCCESSFUL_LIMIT = 50
 	DEVICE = 0
 
