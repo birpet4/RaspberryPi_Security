@@ -16,8 +16,8 @@ def run_pcasystem():
 	try:
 		logging_queue = Queue()
 		log_listener = LogQueueListener(
-			_format='[%(asctime)s]:[%(processName)s,%(threadName)s]:%(name)s:%(levelname)s - %(message)s',
-			_level=logging.DEBUG)
+			_format='[%(levelname)s]:[%(asctime)s]:[%(processName)s,%(threadName)s]:%(name)s - %(message)s',
+			_level=logging.INFO)
 
 		logging_process = Process(target=log_listener.run, args=(logging_queue,))
 		logging_process.start()

@@ -1,8 +1,11 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.email.action import EmailAction
 from raspberry_sec.interface.action import ActionMessage
 
 
-def integration_test():
+def system_test():
 	# Given
 	email_action = EmailAction()
 
@@ -13,4 +16,4 @@ def integration_test():
 
 
 if __name__ == '__main__':
-	integration_test()
+	system_test()
