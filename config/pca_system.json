@@ -3,24 +3,16 @@
     "stream_controller": {
         "__type__": "StreamController",
         "action": "TestAction",
-        "query": "@STREAM1@ and @STREAM2@"
+        "query": "@STREAM1@"
     },
     "streams": [
         {
             "__type__": "Stream",
             "consumers": [
-                "CameraConsumer"
-            ],
-            "name": "STREAM2",
-            "producer": "CameraProducer"
-        },
-        {
-            "__type__": "Stream",
-            "consumers": [
-                "CameraConsumer"
+                "TestConsumer"
             ],
             "name": "STREAM1",
-            "producer": "CameraProducer"
+            "producer": "TestProducer"
         }
     ]
 }
