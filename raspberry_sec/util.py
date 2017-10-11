@@ -8,7 +8,7 @@ class QueueHandler(logging.Handler):
 	"""
 	This is a logging handler which sends events to a multiprocessing queue.
 	"""
-	def __init__(self, queue):
+	def __init__(self, queue: Queue):
 		"""
 		Constructor
 		"""
@@ -64,7 +64,8 @@ class LogQueueListener:
 			try:
 				record = logging_queue.get()
 				logger = logging.getLogger(record.name)
-				logger.handle(record)
+				if logger.isEnabledFor(record.levelno):
+					logger.handle(record)
 			except:
 				raise
 
