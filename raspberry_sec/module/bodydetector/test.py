@@ -25,16 +25,17 @@ def integration_test():
 	# When
 	try:
 		cap = cv2.VideoCapture(0)
-		while cv2.waitKey(50) != 10:
-			_, frame = cap.read()
 
-			found, w = hog.detectMultiScale(frame, winStride=(8, 8), padding=(32, 32), scale=1.05)
+		while cv2.waitKey(100) != 10:
+			_, frame = cap.read()
+			resized_frame = cv2.resize(frame, (320, 240))
+			found, w = hog.detectMultiScale(resized_frame, winStride=(4, 4), padding=(16, 16), scale=1.2)
 			if len(found) > 0:
 				print('Detected')
 
-			draw_detections(frame, found)
+			draw_detections(resized_frame, found)
 
-			cv2.imshow('feed', frame)
+			cv2.imshow('feed', resized_frame)
 	finally:
 		cap.release()
 		cv2.destroyAllWindows()
