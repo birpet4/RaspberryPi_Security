@@ -10,6 +10,10 @@ class BodydetectorConsumer(Consumer):
 	"""
 	LOGGER = logging.getLogger('BodydetectorConsumer')
 	TIMEOUT = 1
+	WIN_STRIDE = (4, 4)
+	PADDING = (16, 16)
+	SCALE = 1.2
+	RESIZE = (320, 240)
 
 	def __init__(self):
 		"""
@@ -38,7 +42,14 @@ class BodydetectorConsumer(Consumer):
 
 		img = context.data
 		if img is not None:
-			found, w = self.hog.detectMultiScale(img, winStride=(8, 8), padding=(32, 32), scale=1.05)
+			resized_img = cv2.resize(img, BodydetectorConsumer.RESIZE)
+
+			found, w = self.hog.detectMultiScale(
+				resized_img,
+				winStride=BodydetectorConsumer.WIN_STRIDE,
+				padding=BodydetectorConsumer.PADDING,
+				scale=BodydetectorConsumer.SCALE)
+
 			if len(found) > 0:
 				BodydetectorConsumer.LOGGER.info('Body detected')
 				context.alert = True
