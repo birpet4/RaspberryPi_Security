@@ -12,7 +12,7 @@ class BodydetectorConsumer(Consumer):
 	TIMEOUT = 1
 	WIN_STRIDE = (4, 4)
 	PADDING = (16, 16)
-	SCALE = 1.2
+	SCALE = 1.23
 	RESIZE = (320, 240)
 
 	def __init__(self):
@@ -37,15 +37,16 @@ class BodydetectorConsumer(Consumer):
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):
+		import cv2
 		if not self.initialized:
 			self.initialize()
 
 		img = context.data
 		if img is not None:
 			resized_img = cv2.resize(img, BodydetectorConsumer.RESIZE)
-
+			grey_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2GRAY)
 			found, w = self.hog.detectMultiScale(
-				resized_img,
+				grey_img,
 				winStride=BodydetectorConsumer.WIN_STRIDE,
 				padding=BodydetectorConsumer.PADDING,
 				scale=BodydetectorConsumer.SCALE)
