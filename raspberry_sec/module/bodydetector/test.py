@@ -21,6 +21,10 @@ def integration_test():
 	# Given
 	hog = cv2.HOGDescriptor()
 	hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+	WIN_STRIDE = (4, 4)
+	PADDING = (16, 16)
+	SCALE = 1.23
+	RESIZE = (320, 240)
 
 	# When
 	try:
@@ -28,14 +32,15 @@ def integration_test():
 
 		while cv2.waitKey(100) != 10:
 			_, frame = cap.read()
-			resized_frame = cv2.resize(frame, (320, 240))
-			found, w = hog.detectMultiScale(resized_frame, winStride=(4, 4), padding=(16, 16), scale=1.2)
+			resized_frame = cv2.resize(frame, RESIZE)
+			grey_image = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2GRAY)
+			found, w = hog.detectMultiScale(grey_image, winStride=WIN_STRIDE, padding=PADDING, scale=SCALE)
 			if len(found) > 0:
 				print('Detected')
 
-			draw_detections(resized_frame, found)
+			draw_detections(grey_image, found)
 
-			cv2.imshow('feed', resized_frame)
+			cv2.imshow('feed', grey_image)
 	finally:
 		cap.release()
 		cv2.destroyAllWindows()

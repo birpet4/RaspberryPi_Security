@@ -80,8 +80,10 @@ class Stream(ProcessReady):
 				Stream.LOGGER.debug(self.name + ' calling producer')
 				data = producer.get_data(data_proxy)
 
-				c_context = ConsumerContext(data, False)
+				c_context = ConsumerContext(data, True)
 				for consumer in consumers:
+					if not c_context.alert:
+						break
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
 					c_context = consumer.run(c_context)
 
