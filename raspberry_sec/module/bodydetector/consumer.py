@@ -42,6 +42,8 @@ class BodydetectorConsumer(Consumer):
 			self.initialize()
 
 		img = context.data
+		context.alert = False
+
 		if img is not None:
 			resized_img = cv2.resize(img, BodydetectorConsumer.RESIZE)
 			grey_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2GRAY)
