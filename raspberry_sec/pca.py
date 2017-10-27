@@ -174,6 +174,7 @@ class PCASystem(ProcessReady):
 		for stream in self.streams:
 			s_process = PCASystem.create_stream_process(context, stream, prod_to_proxy[stream.producer()], sc_queue)
 			stream_processes.append(s_process)
+
 			PCASystem.LOGGER.info('Starting stream: ' + stream.name)
 			s_process.start()
 
@@ -204,7 +205,7 @@ class PCALoader(Loader):
 	"""
 	LOGGER = logging.getLogger('PCALoader')
 	module_package = 'raspberry_sec.module'
-	allowed_modules = {'action', 'consumer','producer'}
+	allowed_modules = {'action', 'consumer', 'producer'}
 	loaded_classes = {Action: {}, Consumer: {}, Producer: {}}
 
 	def __init__(self):

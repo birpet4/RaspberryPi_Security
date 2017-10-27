@@ -21,7 +21,7 @@ def integration_test():
 
 			if len(faces):
 				(x, y, w, h) = faces[0]
-				crop = frame[y:y + h, x:x + w]
+				crop = grey_image[y:y + h, x:x + w]
 
 			cv2.imshow('Face', crop)
 	finally:

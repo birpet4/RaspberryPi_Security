@@ -2,10 +2,8 @@ import time
 import logging
 import re
 from itertools import groupby
-from multiprocessing import Queue
 from concurrent.futures import ThreadPoolExecutor
 from raspberry_sec.interface.consumer import ConsumerContext
-from raspberry_sec.interface.producer import ProducerDataProxy
 from raspberry_sec.interface.action import ActionMessage
 from raspberry_sec.util import ProcessContext, ProcessReady
 
@@ -71,6 +69,7 @@ class Stream(ProcessReady):
 		producer = self.producer()
 		consumers = [consumer() for consumer in self.consumers]
 
+		# for inter-process communication
 		data_proxy = context.get_prop('shared_data_proxy')
 		sc_queue = context.get_prop('sc_queue')
 
@@ -90,7 +89,7 @@ class Stream(ProcessReady):
 				if c_context.alert:
 					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
 					sc_queue.put(StreamControllerMessage(_alert=c_context.alert, _msg=c_context.data, _sender=self.name))
-			except:
+			except Exception:
 				Stream.LOGGER.error('Something really bad happened')
 
 
