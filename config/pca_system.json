@@ -1,18 +1,95 @@
 {
-    "__type__": "PCASystem",
-    "stream_controller": {
-        "__type__": "StreamController",
-        "action": "TestAction",
-        "query": "@STREAM1@"
+  "__type__": "PCASystem",
+  "stream_controller": {
+    "__type__": "StreamController",
+    "action": {
+      "__type__": "EmailAction",
+      "from_addr": "mt.raspberry.pi@gmail.com",
+      "to_addr": "mate.torok.de@gmail.com",
+      "smtp_addr": "smtp.gmail.com:587",
+      "smtp_timeout": 10,
+      "user": "mt.raspberry.pi",
+      "password": ""
     },
-    "streams": [
+    "query": "@STREAM1@ and @STREAM2@"
+  },
+  "streams": [
+    {
+      "__type__": "Stream",
+      "name": "STREAM1",
+      "producer": {
+        "__type__": "CameraProducer",
+        "wait_key_interval": 250,
+        "unsuccessful_limit": 50,
+        "device": 0
+      },
+      "consumers": [
         {
-            "__type__": "Stream",
-            "consumers": [
-                "TestConsumer"
-            ],
-            "name": "STREAM1",
-            "producer": "TestProducer"
+          "__type__": "MotiondetectorConsumer",
+          "threshold": 25,
+          "threshold_max_val": 255,
+          "dilate_iteration": 2,
+          "area_threshold": 250,
+          "resize_width": 320,
+          "resize_height": 240
+        },
+        {
+          "__type__": "BodydetectorConsumer",
+          "timeout": 1,
+          "win_stride_x": 4,
+          "win_stride_y": 4,
+          "padding_x": 16,
+          "padding_y": 16,
+          "scale": 1.23,
+          "resize_width": 320,
+          "resize_height": 240
         }
-    ]
+      ]
+    },
+    {
+      "__type__": "Stream",
+      "name": "STREAM2",
+      "producer": {
+        "__type__": "CameraProducer",
+        "wait_key_interval": 250,
+        "unsuccessful_limit": 50,
+        "device": 0
+      },
+      "consumers": [
+        {
+          "__type__": "MotiondetectorConsumer",
+          "threshold": 25,
+          "threshold_max_val": 255,
+          "dilate_iteration": 2,
+          "area_threshold": 250,
+          "resize_width": 320,
+          "resize_height": 240
+        },
+        {
+          "__type__": "FacedetectorConsumer",
+          "timeout": 1,
+          "scale_factor": 1.3,
+          "min_neighbors": 5,
+          "cascade_file": "resource/haarcascade_frontalface_default.xml"
+        },
+        {
+          "__type__": "FacerecognizerConsumer",
+          "eigen_model": "resources/eigen.yml",
+          "fisher_model": "resources/fisher.yml",
+          "lbph_model": "resources/lbph.yml",
+          "label_map": "resources/labels.json",
+          "size": 150,
+          "eigen_components": 10,
+          "eigen_threshold": 4000.0,
+          "fisher_components": 5,
+          "fisher_threshold": 600.0,
+          "lbph_radius": 3,
+          "lbph_neighbors": 9,
+          "lbph_width": 7,
+          "lbph_height": 7,
+          "lbph_threshold": 80.0
+        }
+      ]
+    }
+  ]
 }
