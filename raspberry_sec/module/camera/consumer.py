@@ -9,8 +9,13 @@ class CameraConsumer(Consumer):
 	Consumer class for showing camera images
 	"""
 	LOGGER = logging.getLogger('CameraConsumer')
-	TIMEOUT = 1
-	WAIT_KEY_TIMEOUT = 250
+
+	def __init__(self, parameters: dict):
+		"""
+		Constructor
+		:param parameters: see Consumer constructor
+		"""
+		super().__init__(parameters)
 
 	def get_name(self):
 		return 'CameraConsumer'
@@ -21,10 +26,10 @@ class CameraConsumer(Consumer):
 		img = context.data
 		if img is not None:
 			cv2.imshow('Webcam', img)
-			cv2.waitKey(CameraConsumer.WAIT_KEY_TIMEOUT)
+			cv2.waitKey(self.parameters['wait_key_timeout'])
 		else:
 			CameraConsumer.LOGGER.warning('No image')
-			time.sleep(CameraConsumer.TIMEOUT)
+			time.sleep(self.parameters['timeout'])
 
 		return context
 

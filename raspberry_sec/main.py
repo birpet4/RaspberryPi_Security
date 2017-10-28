@@ -8,16 +8,19 @@ from raspberry_sec.pca import PCASystemJSONEncoder, PCASystemJSONDecoder
 from raspberry_sec.util import LogQueueListener, ProcessContext, ProcessReady
 
 
-def run_pcasystem():
+def run_pcasystem(env: str, logging_level: int):
 	"""
 	Sets up the logging facility and then
 	it loads the PCASystem specified in the configuration
+	:param env: test/prod
+	:param logging_level: level of logging, e.g. INFO
 	"""
 	try:
+		config_file = '../config/' + env + '/pca_system.json'
 		logging_queue = Queue()
 		log_listener = LogQueueListener(
 			_format='[%(levelname)s]:[%(asctime)s]:[%(processName)s,%(threadName)s]:%(name)s - %(message)s',
-			_level=logging.INFO)
+			_level=logging_level)
 
 		logging_process = Process(target=log_listener.run, args=(logging_queue,))
 		logging_process.start()
@@ -25,7 +28,7 @@ def run_pcasystem():
 		# Setup logging for current process
 		ProcessReady.setup_logging(logging_queue)
 
-		pca_system = PCASystemJSONDecoder.load_from_config('../config/pca_system.json')
+		pca_system = PCASystemJSONDecoder.load_from_config(config_file)
 		event = Event()
 		event.clear()
 
@@ -41,11 +44,11 @@ def run_pcasystem():
 		logging_process.terminate()
 
 		# save config
-		PCASystemJSONEncoder.save_config(pca_system, '../config/pca_system.json')
+		PCASystemJSONEncoder.save_config(pca_system, config_file)
 
 
 def main():
-	run_pcasystem()
+	run_pcasystem('prod', logging.DEBUG)
 
 
 if __name__ == '__main__':

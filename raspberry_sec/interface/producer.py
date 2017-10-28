@@ -1,4 +1,3 @@
-from multiprocessing import Event
 from multiprocessing.managers import BaseManager
 from raspberry_sec.util import ProcessContext, ProcessReady
 from enum import Enum
@@ -46,6 +45,13 @@ class Producer(ProcessReady):
 	"""
 	Base class for producing sample data
 	"""
+	def __init__(self, parameters: dict = dict()):
+		"""
+		Constructor
+		:param parameters: configurations coming from the JSON file
+		"""
+		self.parameters = parameters
+
 	def register_shared_data_proxy(self):
 		"""
 		Registers shared data proxy for inter-process communication (with other Producer instances)

@@ -15,9 +15,13 @@ class CameraProducer(Producer):
 	Class for producing camera sample data
 	"""
 	LOGGER = logging.getLogger('CameraProducer')
-	WAIT_KEY_INTERVAL = 250
-	UNSUCCESSFUL_LIMIT = 50
-	DEVICE = 0
+
+	def __init__(self, parameters: dict):
+		"""
+		Constructor
+		:param parameters: see Producer constructor
+		"""
+		super().__init__(parameters)
 
 	def register_shared_data_proxy(self):
 		ProducerDataManager.register('CameraProducerDataProxy', CameraProducerDataProxy)
@@ -28,9 +32,9 @@ class CameraProducer(Producer):
 	def run(self, context: ProcessContext):
 		import cv2
 		try:
-			cam = cv2.VideoCapture(CameraProducer.DEVICE)
+			cam = cv2.VideoCapture(self.parameters['device'])
 			if not cam.isOpened():
-				CameraProducer.LOGGER.error('Cannot capture device: ' + str(CameraProducer.DEVICE))
+				CameraProducer.LOGGER.error('Cannot capture device: ' + str(self.parameters['device']))
 				return
 
 			unsuccessful_images = 0
@@ -44,10 +48,10 @@ class CameraProducer(Producer):
 					unsuccessful_images += 1
 					CameraProducer.LOGGER.warning('Could not capture image')
 					# if too many errors happened we rather kill this process later
-					if unsuccessful_images == CameraProducer.UNSUCCESSFUL_LIMIT:
+					if unsuccessful_images == self.parameters['unsuccessful_limit']:
 						break
 
-				cv2.waitKey(CameraProducer.WAIT_KEY_INTERVAL)
+				cv2.waitKey(self.parameters['wait_key_interval'])
 		finally:
 			CameraProducer.LOGGER.debug('Stopping capturing images')
 			cam.release()
