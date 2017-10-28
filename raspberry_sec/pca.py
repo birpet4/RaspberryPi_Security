@@ -22,9 +22,6 @@ class PCASystem(ProcessReady):
 		"""
 		Constructor
 		"""
-		self.producers = dict()
-		self.consumers = dict()
-		self.actions = dict()
 		self.streams = set()
 		self.stream_controller = None
 
@@ -143,7 +140,7 @@ class PCASystem(ProcessReady):
 		"""
 		self.validate()
 
-		producer_set = set([s.producer() for s in self.streams])
+		producer_set = set([s.producer for s in self.streams])
 		sc_queue = Queue()
 		stream_processes = []
 		# producer-to-process mapping
@@ -172,7 +169,7 @@ class PCASystem(ProcessReady):
 
 		# start stream processes
 		for stream in self.streams:
-			s_process = PCASystem.create_stream_process(context, stream, prod_to_proxy[stream.producer()], sc_queue)
+			s_process = PCASystem.create_stream_process(context, stream, prod_to_proxy[stream.producer], sc_queue)
 			stream_processes.append(s_process)
 
 			PCASystem.LOGGER.info('Starting stream: ' + stream.name)
@@ -291,6 +288,7 @@ class PCASystemJSONEncoder(JSONEncoder):
 	"""
 	LOGGER = logging.getLogger('PCASystemJSONEncoder')
 	TYPE = '__type__'
+	PARAMETERS = 'parameters'
 
 	@staticmethod
 	def save_config(pca_system: PCASystem, config_path: str):
@@ -314,9 +312,20 @@ class PCASystemJSONEncoder(JSONEncoder):
 		:return: dict version of the input
 		"""
 		obj_dict = dict()
-		obj_dict['producer'] = obj.producer.__name__
-		obj_dict['consumers'] = [c.__name__ for c in obj.consumers]
+
+		obj_dict['producer'] = dict()
+		obj_dict['producer'][PCASystemJSONEncoder.TYPE] = type(obj.producer).__name__
+		obj_dict['producer'][PCASystemJSONEncoder.PARAMETERS] = obj.producer.parameters
+
+		obj_dict['consumers'] = list()
+		for consumer in obj.consumers:
+			c = dict()
+			c[PCASystemJSONEncoder.TYPE] = type(consumer).__name__
+			c[PCASystemJSONEncoder.PARAMETERS] = consumer.parameters
+			obj_dict['consumers'].append(c)
+
 		obj_dict['name'] = obj.name
+
 		obj_dict[PCASystemJSONEncoder.TYPE] = Stream.__name__
 		return obj_dict
 
@@ -340,7 +349,11 @@ class PCASystemJSONEncoder(JSONEncoder):
 		"""
 		obj_dict = dict()
 		obj_dict['query'] = obj.query
-		obj_dict['action'] = obj.action.__name__
+
+		obj_dict['action'] = dict()
+		obj_dict['action'][PCASystemJSONEncoder.TYPE] = type(obj.action).__name__
+		obj_dict['action'][PCASystemJSONEncoder.PARAMETERS] = obj.action.parameters
+
 		obj_dict[PCASystemJSONEncoder.TYPE] = StreamController.__name__
 		return obj_dict
 
@@ -399,8 +412,17 @@ class PCASystemJSONDecoder(JSONDecoder):
 		"""
 		try:
 			new_stream = Stream(_name=obj_dict['name'])
-			new_stream.producer = self.loaded_producers[obj_dict['producer']]
-			new_stream.consumers = [self.loaded_consumers[cons] for cons in obj_dict['consumers']]
+
+			producer_class_name = obj_dict['producer'][PCASystemJSONEncoder.TYPE]
+			parameters_dict = obj_dict['producer'][PCASystemJSONEncoder.PARAMETERS]
+			new_stream.producer = self.loaded_producers[producer_class_name](parameters_dict)
+
+			new_stream.consumers = list()
+			for consumer in obj_dict['consumers']:
+				consumer_class_name = consumer[PCASystemJSONEncoder.TYPE]
+				parameters_dict = consumer[PCASystemJSONEncoder.PARAMETERS]
+				new_stream.consumers.append(self.loaded_consumers[consumer_class_name](parameters_dict))
+
 			return new_stream
 		except KeyError:
 			PCASystemJSONDecoder.LOGGER.error('Cannot load Stream-s from JSON')
@@ -414,7 +436,11 @@ class PCASystemJSONDecoder(JSONDecoder):
 		try:
 			stream_controller = StreamController()
 			stream_controller.query = obj_dict['query']
-			stream_controller.action = self.loaded_actions[obj_dict['action']]
+
+			action_class_name = obj_dict['action'][PCASystemJSONEncoder.TYPE]
+			parameters_dict = obj_dict['action'][PCASystemJSONEncoder.PARAMETERS]
+
+			stream_controller.action = self.loaded_actions[action_class_name](parameters_dict)
 			return stream_controller
 		except KeyError:
 			PCASystemJSONDecoder.LOGGER.error('Cannot load StreamController from JSON')
@@ -427,10 +453,6 @@ class PCASystemJSONDecoder(JSONDecoder):
 		"""
 		try:
 			pca_system = PCASystem()
-			pca_system.actions = {a: a for a in self.loaded_actions}
-			pca_system.producers = {p: p for p in self.loaded_producers}
-			pca_system.consumers = {c: c for c in self.loaded_consumers}
-
 			pca_system.stream_controller = obj_dict['stream_controller']
 			pca_system.streams = obj_dict['streams']
 			return pca_system
@@ -457,4 +479,4 @@ class PCASystemJSONDecoder(JSONDecoder):
 			return self.streamcontroller_from_dict(obj_dict)
 		# Default
 		else:
-			return {}
+			return obj_dict

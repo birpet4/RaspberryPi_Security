@@ -14,6 +14,13 @@ class Action:
 	"""
 	Base class for alerting
 	"""
+	def __init__(self, parameters: dict = dict()):
+		"""
+		Constructor
+		:param parameters: configurations coming from the JSON file
+		"""
+		self.parameters = parameters
+
 	def get_name(self):
 		"""
 		:return: name of the component

@@ -10,27 +10,13 @@ class FacerecognizerConsumer(Consumer):
 	Consumer class for recognizing human face
 	"""
 	LOGGER = logging.getLogger('FacerecognizerConsumer')
-	TIMEOUT = 1
-	RESOURCE = 'resources'
-	EIGEN_MODEL = os.sep.join([RESOURCE, 'eigen.yml'])
-	FISHER_MODEL = os.sep.join([RESOURCE, 'fisher.yml'])
-	LBPH_MODEL = os.sep.join([RESOURCE, 'lbph.yml'])
-	LABEL_MAP = os.sep.join([RESOURCE, 'labels.json'])
-	SIZE = 150
-	EIGEN_COMPONENTS = 10
-	EIGEN_THRESHOLD = 4000.0
-	FISHER_COMPONENTS = 5
-	FISHER_THRESHOLD = 600.0
-	LBPH_RADIUS = 3
-	LBPH_NEIGHBORS = 9
-	LBPH_WIDTH = 7
-	LBPH_HEIGHT = 7
-	LBPH_THRESHOLD = 80.0
 
-	def __init__(self):
+	def __init__(self, parameters: dict):
 		"""
 		Constructor
+		:param parameters: see Consumer constructor
 		"""
+		super().__init__(parameters)
 		self.initialized = False
 		self.eigen_recognizer = None
 		self.fisher_recognizer = None
@@ -48,29 +34,29 @@ class FacerecognizerConsumer(Consumer):
 		FacerecognizerConsumer.LOGGER.info('Initializing component')
 
 		self.eigen_recognizer = cv2.face.EigenFaceRecognizer_create(
-			num_components=FacerecognizerConsumer.EIGEN_COMPONENTS,
-			threshold=FacerecognizerConsumer.EIGEN_THRESHOLD)
+			num_components=self.parameters['eigen_components'],
+			threshold=self.parameters['eigen_threshold'])
 
 		self.fisher_recognizer = cv2.face.FisherFaceRecognizer_create(
-			num_components=FacerecognizerConsumer.FISHER_COMPONENTS,
-			threshold=FacerecognizerConsumer.FISHER_THRESHOLD)
+			num_components=self.parameters['fisher_components'],
+			threshold=self.parameters['fisher_threshold'])
 
 		self.lbph_recognizer = cv2.face.LBPHFaceRecognizer_create(
-			radius=FacerecognizerConsumer.LBPH_RADIUS,
-			neighbors=FacerecognizerConsumer.LBPH_NEIGHBORS,
-			grid_x=FacerecognizerConsumer.LBPH_WIDTH,
-			grid_y=FacerecognizerConsumer.LBPH_HEIGHT,
-			threshold=FacerecognizerConsumer.LBPH_THRESHOLD)
+			radius=self.parameters['lbph_radius'],
+			neighbors=self.parameters['lbph_neighbors'],
+			grid_x=self.parameters['lbph_width'],
+			grid_y=self.parameters['lbph_height'],
+			threshold=self.parameters['lbph_threshold'])
 
-		self.eigen_recognizer.load(FacerecognizerConsumer.EIGEN_MODEL)
-		self.fisher_recognizer.load(FacerecognizerConsumer.FISHER_MODEL)
-		self.lbph_recognizer.load(FacerecognizerConsumer.LBPH_MODEL)
+		self.eigen_recognizer.load(self.parameters['eigen_model'])
+		self.fisher_recognizer.load(self.parameters['fisher_model'])
+		self.lbph_recognizer.load(self.parameters['lbph_model'])
 
 		try:
-			with open(FacerecognizerConsumer.LABEL_MAP) as label_file:
+			with open(self.parameters['label_map']) as label_file:
 				self.label_to_name = json.load(label_file)
 		except Exception:
-			FacerecognizerConsumer.LOGGER.error('Cannot read the label file: ' + FacerecognizerConsumer.LABEL_MAP)
+			FacerecognizerConsumer.LOGGER.error('Cannot read the label file: ' + self.parameters['label_map'])
 			self.label_to_name = dict()
 
 		self.initialized = True
@@ -85,12 +71,14 @@ class FacerecognizerConsumer(Consumer):
 		context.alert = False
 
 		if face is not None:
-			face = cv2.resize(face, (FacerecognizerConsumer.SIZE, FacerecognizerConsumer.SIZE))
+			face = cv2.resize(face, (self.parameters['size'], self.parameters['size']))
 			name = self.recognize(face)
-			if name is not None:
+			if name is None:
 				context.alert = True
-				context.data = 'Recognized face: ' + name
+				context.data = 'Cannot recognize face'
 				FacerecognizerConsumer.LOGGER.info(context.data)
+			else:
+				FacerecognizerConsumer.LOGGER.info('Recognized: ' + name)
 
 		return context
 
@@ -98,21 +86,26 @@ class FacerecognizerConsumer(Consumer):
 		"""
 		This method decides if the face is among those that are to be recognized.
 		It uses 3 different recognition algorithms for this (Eigen, Fisher, LBPH).
+		Though these can be disabled by the configuration.
 		:param face: detected face
 		:return: name if the face was successfully identified by at least 1 of the recognizers or None
 		"""
-		f_label, _ = self.fisher_recognizer.predict(face)
-		e_label, _ = self.eigen_recognizer.predict(face)
-		l_label, _ = self.lbph_recognizer.predict(face)
+		if self.parameters['fisher_enabled']:
+			label, _ = self.fisher_recognizer.predict(face)
+			if self.label_to_name.__contains__(label):
+				return self.label_to_name[label]
 
-		if self.label_to_name.__contains__(f_label):
-			return self.label_to_name[f_label]
-		elif self.label_to_name.__contains__(e_label):
-			return self.label_to_name[e_label]
-		elif self.label_to_name.__contains__(l_label):
-			return self.label_to_name[l_label]
-		else:
-			return None
+		if self.parameters['eigen_enabled']:
+			label, _ = self.eigen_recognizer.predict(face)
+			if self.label_to_name.__contains__(label):
+				return self.label_to_name[label]
+
+		if self.parameters['lbph_enabled']:
+			label, _ = self.lbph_recognizer.predict(face)
+			if self.label_to_name.__contains__(label):
+				return self.label_to_name[label]
+
+		return None
 
 	def get_type(self):
 		return Type.CAMERA

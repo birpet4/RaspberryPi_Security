@@ -52,9 +52,9 @@ class Stream(ProcessReady):
 			Stream.LOGGER.error('No producer set for stream: ' + self.name)
 			raise
 
-		prod_type = self.producer().get_type()
+		prod_type = self.producer.get_type()
 		for consumer in self.consumers:
-			if consumer().get_type() is not prod_type:
+			if consumer.get_type() is not prod_type:
 				Stream.LOGGER.error('Wrong consumer type in stream: ' + self.name)
 				raise
 
@@ -65,10 +65,6 @@ class Stream(ProcessReady):
 		"""
 		self.validate()
 
-		# instantiating classes
-		producer = self.producer()
-		consumers = [consumer() for consumer in self.consumers]
-
 		# for inter-process communication
 		data_proxy = context.get_prop('shared_data_proxy')
 		sc_queue = context.get_prop('sc_queue')
@@ -77,10 +73,10 @@ class Stream(ProcessReady):
 		while True:
 			try:
 				Stream.LOGGER.debug(self.name + ' calling producer')
-				data = producer.get_data(data_proxy)
+				data = self.producer.get_data(data_proxy)
 
 				c_context = ConsumerContext(data, True)
-				for consumer in consumers:
+				for consumer in self.consumers:
 					if not c_context.alert:
 						break
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
@@ -89,8 +85,8 @@ class Stream(ProcessReady):
 				if c_context.alert:
 					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
 					sc_queue.put(StreamControllerMessage(_alert=c_context.alert, _msg=c_context.data, _sender=self.name))
-			except Exception:
-				Stream.LOGGER.error('Something really bad happened')
+			except Exception as e:
+				Stream.LOGGER.error('Something really bad happened: ' + e.__str__())
 
 
 class StreamControllerMessage:
@@ -116,7 +112,7 @@ class StreamController(ProcessReady):
 	"""
 	LOGGER = logging.getLogger('StreamController')
 	PLACEHOLDER_PATTERN = '@.*?@'
-	POLLING_INTERVAL = 1
+	POLLING_INTERVAL = 3
 
 	def __init__(self):
 		"""
@@ -145,7 +141,7 @@ class StreamController(ProcessReady):
 		whether to alert or not. For that it puts together a logical
 		expression that it also evaluates afterwards.
 		:param messages: list of StreamControllerMessage-s
-		:return: decision (True/False) and alert data
+		:return: decision (True/False) and list of ActionMessage-s
 		"""
 		query = self.query
 		action_messages = []
@@ -174,9 +170,6 @@ class StreamController(ProcessReady):
 		and takes care of the action firing mechanism.
 		:param context: Process context
 		"""
-		# instantiating action
-		action = self.action()
-
 		message_queue = context.get_prop('message_queue')
 		message_limit = context.get_prop('message_limit')
 
@@ -197,6 +190,6 @@ class StreamController(ProcessReady):
 
 				# alert
 				if alert:
-					executor.submit(action.fire, action_messages)
+					executor.submit(self.action.fire, action_messages)
 
 				time.sleep(StreamController.POLLING_INTERVAL)

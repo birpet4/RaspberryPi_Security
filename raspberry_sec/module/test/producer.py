@@ -18,6 +18,13 @@ class TestProducer(Producer):
 	LOGGER = logging.getLogger('TestProducer')
 	SLEEP_INTERVAL = 1
 
+	def __init__(self, parameters: dict):
+		"""
+		Constructor
+		:param parameters: see Producer constructor
+		"""
+		super().__init__(parameters)
+
 	def register_shared_data_proxy(self):
 		TestProducer.LOGGER.debug('Registered by shared data manager')
 		ProducerDataManager.register('TestDataProxy', TestDataProxy)
