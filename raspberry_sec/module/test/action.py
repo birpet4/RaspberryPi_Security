@@ -9,6 +9,13 @@ class TestAction(Action):
 	"""
 	LOGGER = logging.getLogger('TestAction')
 
+	def __init__(self, parameters: dict):
+		"""
+		Constructor
+		:param parameters: see Action constructor
+		"""
+		super().__init__(parameters)
+
 	def get_name(self):
 		return 'TestAction'
 

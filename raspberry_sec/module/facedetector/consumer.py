@@ -9,15 +9,13 @@ class FacedetectorConsumer(Consumer):
 	Consumer class for detecting human body in an image
 	"""
 	LOGGER = logging.getLogger('FacedetectorConsumer')
-	TIMEOUT = 1
-	SCALE_FACTOR = 1.3
-	MIN_NEIGHBORS = 5
-	CASCADE_FILE = 'resource/haarcascade_frontalface_default.xml'
 
-	def __init__(self):
+	def __init__(self, parameters: dict):
 		"""
 		Constructor
+		:param parameters: see Consumer constructor
 		"""
+		super().__init__(parameters)
 		self.initialized = False
 		self.face_cascade = None
 
@@ -30,7 +28,7 @@ class FacedetectorConsumer(Consumer):
 		"""
 		import cv2
 		FacedetectorConsumer.LOGGER.info('Initializing component')
-		self.face_cascade = cv2.CascadeClassifier(FacedetectorConsumer.CASCADE_FILE)
+		self.face_cascade = cv2.CascadeClassifier(self.parameters['cascade_file'])
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):
@@ -45,8 +43,8 @@ class FacedetectorConsumer(Consumer):
 			grey_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 			faces = self.face_cascade.detectMultiScale(
 				image=grey_img,
-				scaleFactor=FacedetectorConsumer.SCALE_FACTOR,
-				minNeighbors=FacedetectorConsumer.MIN_NEIGHBORS)
+				scaleFactor=self.parameters['scale_factor'],
+				minNeighbors=self.parameters['min_neighbors'])
 
 			# Take one of the faces and process that
 			if len(faces) > 0:
@@ -56,7 +54,7 @@ class FacedetectorConsumer(Consumer):
 				context.data = img[y:(y + h), x:(x + w)]
 		else:
 			FacedetectorConsumer.LOGGER.warning('No image')
-			time.sleep(FacedetectorConsumer.TIMEOUT)
+			time.sleep(self.parameters['timeout'])
 
 		return context
 

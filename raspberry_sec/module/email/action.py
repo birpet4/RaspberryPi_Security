@@ -10,12 +10,13 @@ class EmailAction(Action):
 	Action class for sending emails (with HTML content)
 	"""
 	LOGGER = logging.getLogger('EmailAction')
-	FROM_ADDR = 'mt.raspberry.pi@gmail.com'
-	TO_ADDR = 'mate.torok.de@gmail.com'
-	SMTP_ADDR = 'smtp.gmail.com:587'
-	SMTP_TIMEOUT = 10
-	USER = 'mt.raspberry.pi'
-	PASSWORD = ''
+
+	def __init__(self, parameters: dict):
+		"""
+		Constructor
+		:param parameters: see Action constructor
+		"""
+		super().__init__(parameters)
 
 	def get_name(self):
 		return 'EmailAction'
@@ -28,19 +29,19 @@ class EmailAction(Action):
 		EmailAction.LOGGER.info('Action fired:')
 
 		mail = MIMEMultipart('alternative')
-		mail['From'] = EmailAction.FROM_ADDR
-		mail['To'] = EmailAction.TO_ADDR
-		mail['Subject'] = 'RaspberryPi ALERT'
+		mail['From'] = self.parameters['from_addr']
+		mail['To'] = self.parameters['to_addr']
+		mail['Subject'] = self.parameters['subject']
 
 		content = ''.join([m.data for m in msg])
 		mail.attach(MIMEText('<html>' + content + '</html>', 'html'))
 
 		try:
-			with smtplib.SMTP(host=EmailAction.SMTP_ADDR, timeout=EmailAction.SMTP_TIMEOUT) as server:
+			with smtplib.SMTP(host=self.parameters['smtp_addr'], timeout=self.parameters['smtp_timeout']) as server:
 				server.ehlo()
 				server.starttls()
-				server.login(EmailAction.USER, EmailAction.PASSWORD)
-				server.sendmail(EmailAction.FROM_ADDR, EmailAction.TO_ADDR, mail.as_string())
+				server.login(self.parameters['user'], self.parameters['password'])
+				server.sendmail(self.parameters['from_addr'], self.parameters['to_addr'], mail.as_string())
 			EmailAction.LOGGER.info('Email has been successfully sent')
-		except Exception:
-			EmailAction.LOGGER.error('Email could not be sent')
+		except Exception as e:
+			EmailAction.LOGGER.error('Email could not be sent: ' + e.__str__())
