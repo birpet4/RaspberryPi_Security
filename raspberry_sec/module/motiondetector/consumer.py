@@ -56,6 +56,7 @@ class MotiondetectorConsumer(Consumer):
 			context.alert = True
 			MotiondetectorConsumer.LOGGER.info('Motion detected')
 
+		self.previous_frame = gray
 		return context
 
 	def get_type(self):
