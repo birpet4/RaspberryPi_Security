@@ -68,8 +68,8 @@ class PCASystem(ProcessReady):
 		:return: newly created process
 		"""
 		s_context = ProcessContext(
-			log_queue=context.logging_queue,
 			stop_event=context.stop_event,
+			log_queue=context.logging_queue,
 			shared_data_proxy=proxy,
 			sc_queue=sc_queue
 		)
