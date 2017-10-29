@@ -48,13 +48,14 @@ class FacerecognizerConsumer(Consumer):
 			grid_y=self.parameters['lbph_height'],
 			threshold=self.parameters['lbph_threshold'])
 
-		self.eigen_recognizer.load(self.parameters['eigen_model'])
-		self.fisher_recognizer.load(self.parameters['fisher_model'])
-		self.lbph_recognizer.load(self.parameters['lbph_model'])
+		self.eigen_recognizer.read(self.parameters['eigen_model'])
+		self.fisher_recognizer.read(self.parameters['fisher_model'])
+		self.lbph_recognizer.read(self.parameters['lbph_model'])
 
 		try:
 			with open(self.parameters['label_map']) as label_file:
-				self.label_to_name = json.load(label_file)
+				names_with_labels = json.load(label_file)
+				self.label_to_name = {value: key for key, value in names_with_labels.items()}
 		except Exception:
 			FacerecognizerConsumer.LOGGER.error('Cannot read the label file: ' + self.parameters['label_map'])
 			self.label_to_name = dict()
@@ -78,6 +79,7 @@ class FacerecognizerConsumer(Consumer):
 				context.data = 'Cannot recognize face'
 				FacerecognizerConsumer.LOGGER.info(context.data)
 			else:
+				context.data = name
 				FacerecognizerConsumer.LOGGER.info('Recognized: ' + name)
 
 		return context

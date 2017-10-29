@@ -24,7 +24,7 @@ def integration_test():
 
 	# When
 	try:
-		while cv2.waitKey(100) != 10:
+		while cv2.waitKey(100) == -1:
 			success, frame = cap.read()
 			if success:
 				context.data = cv2.resize(frame, (640, 360))

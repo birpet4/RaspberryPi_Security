@@ -4,7 +4,7 @@ from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer, Con
 
 def set_parameters():
 	parameters = dict()
-	parameters['cascade_file'] = 'resource/haarcascade_frontalface_default.xml'
+	parameters['cascade_file'] = 'resources/haarcascade_frontalface_default.xml'
 	parameters['min_neighbors'] = 5
 	parameters['scale_factor'] = 1.3
 	parameters['timeout'] = 1
@@ -19,7 +19,7 @@ def integration_test():
 
 	# When
 	try:
-		while cv2.waitKey(50) != 10:
+		while cv2.waitKey(50) == -1:
 			success, frame = cap.read()
 			if success:
 				context.data = frame

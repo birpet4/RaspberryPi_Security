@@ -51,7 +51,9 @@ class FacedetectorConsumer(Consumer):
 				FacedetectorConsumer.LOGGER.info('Face detected')
 				(x, y, w, h) = faces[0]
 				context.alert = True
-				context.data = img[y:(y + h), x:(x + w)]
+				context.data = grey_img[y:(y + h), x:(x + w)]
+			else:
+				FacedetectorConsumer.LOGGER.debug('Could not detect any faces')
 		else:
 			FacedetectorConsumer.LOGGER.warning('No image')
 			time.sleep(self.parameters['timeout'])
