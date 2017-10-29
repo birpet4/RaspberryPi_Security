@@ -21,13 +21,15 @@ def integration_test():
 
 	# When
 	try:
+		count = 0
 		while True:
 			success, frame = cap.read()
 			if success:
 				context.data = frame
 				consumer.run(context)
 			if context.alert:
-				print('Motion Detected')
+				print('Motion Detected: ' + str(count))
+				count += 1
 	finally:
 		cap.release()
 		cv2.destroyAllWindows()

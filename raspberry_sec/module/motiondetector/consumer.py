@@ -1,4 +1,5 @@
 import logging
+import time
 from raspberry_sec.interface.producer import Type
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
@@ -28,6 +29,7 @@ class MotiondetectorConsumer(Consumer):
 
 		if img is None:
 			MotiondetectorConsumer.LOGGER.debug('No image')
+			time.sleep(self.parameters['timeout'])
 			return context
 
 		frame = cv2.resize(img, (self.parameters['resize_width'], self.parameters['resize_height']))
@@ -54,6 +56,7 @@ class MotiondetectorConsumer(Consumer):
 		motion_detected = any([True for c in contours if cv2.contourArea(c) > self.parameters['area_threshold']])
 		if motion_detected:
 			context.alert = True
+			context.alert_data = 'Motion detected'
 			MotiondetectorConsumer.LOGGER.info('Motion detected')
 
 		self.previous_frame = gray

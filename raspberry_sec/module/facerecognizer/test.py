@@ -55,7 +55,7 @@ def integration_test():
 				face = context.data
 			if context.alert:
 				recognizer_consumer.run(context)
-				cv2.putText(face, context.data, (5, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+				cv2.putText(face, context.alert_data, (5, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 				cv2.imshow('Face', face)
 	finally:
 		cap.release()

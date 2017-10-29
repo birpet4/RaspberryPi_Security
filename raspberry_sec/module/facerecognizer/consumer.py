@@ -26,6 +26,15 @@ class FacerecognizerConsumer(Consumer):
 	def get_name(self):
 		return 'FacerecognizerConsumer'
 
+	@staticmethod
+	def get_full_path(file: str):
+		"""
+		:param file: e.g. Cascade.xml
+		:return: the absolute path for the file
+		"""
+		import os
+		return os.sep.join([os.path.dirname(__file__), file])
+
 	def initialize(self):
 		"""
 		Initializes component
@@ -48,16 +57,17 @@ class FacerecognizerConsumer(Consumer):
 			grid_y=self.parameters['lbph_height'],
 			threshold=self.parameters['lbph_threshold'])
 
-		self.eigen_recognizer.read(self.parameters['eigen_model'])
-		self.fisher_recognizer.read(self.parameters['fisher_model'])
-		self.lbph_recognizer.read(self.parameters['lbph_model'])
+		self.eigen_recognizer.read(FacerecognizerConsumer.get_full_path(self.parameters['eigen_model']))
+		self.fisher_recognizer.read(FacerecognizerConsumer.get_full_path(self.parameters['fisher_model']))
+		self.lbph_recognizer.read(FacerecognizerConsumer.get_full_path(self.parameters['lbph_model']))
 
 		try:
-			with open(self.parameters['label_map']) as label_file:
+			label_map_path = FacerecognizerConsumer.get_full_path(self.parameters['label_map'])
+			with open(label_map_path) as label_file:
 				names_with_labels = json.load(label_file)
 				self.label_to_name = {value: key for key, value in names_with_labels.items()}
 		except Exception:
-			FacerecognizerConsumer.LOGGER.error('Cannot read the label file: ' + self.parameters['label_map'])
+			FacerecognizerConsumer.LOGGER.error('Cannot read the label file: ' + label_map_path)
 			self.label_to_name = dict()
 
 		self.initialized = True
@@ -76,10 +86,10 @@ class FacerecognizerConsumer(Consumer):
 			name = self.recognize(face)
 			if name is None:
 				context.alert = True
-				context.data = 'Cannot recognize face'
-				FacerecognizerConsumer.LOGGER.info(context.data)
+				context.alert_data = 'Cannot recognize face'
+				FacerecognizerConsumer.LOGGER.info(context.alert_data)
 			else:
-				context.data = name
+				context.alert_data = name
 				FacerecognizerConsumer.LOGGER.info('Recognized: ' + name)
 
 		return context

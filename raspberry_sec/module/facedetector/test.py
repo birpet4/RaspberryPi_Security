@@ -19,13 +19,15 @@ def integration_test():
 
 	# When
 	try:
+		count = 0
 		while cv2.waitKey(50) == -1:
 			success, frame = cap.read()
 			if success:
 				context.data = frame
 				consumer.run(context)
 			if context.alert:
-				print('Face Detected')
+				print('Face Detected: ' + str(count))
+				count += 1
 				cv2.imshow('Face', context.data)
 	finally:
 		cap.release()

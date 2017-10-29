@@ -22,13 +22,22 @@ class FacedetectorConsumer(Consumer):
 	def get_name(self):
 		return 'FacedetectorConsumer'
 
+	@staticmethod
+	def get_full_path(file: str):
+		"""
+		:param file: e.g. Cascade.xml
+		:return: the absolute path for the file
+		"""
+		import os
+		return os.sep.join([os.path.dirname(__file__), file])
+
 	def initialize(self):
 		"""
 		Initializes component
 		"""
 		import cv2
 		FacedetectorConsumer.LOGGER.info('Initializing component')
-		self.face_cascade = cv2.CascadeClassifier(self.parameters['cascade_file'])
+		self.face_cascade = cv2.CascadeClassifier(FacedetectorConsumer.get_full_path(self.parameters['cascade_file']))
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):
@@ -40,18 +49,19 @@ class FacedetectorConsumer(Consumer):
 		context.alert = False
 
 		if img is not None:
-			grey_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 			faces = self.face_cascade.detectMultiScale(
-				image=grey_img,
+				image=img,
 				scaleFactor=self.parameters['scale_factor'],
 				minNeighbors=self.parameters['min_neighbors'])
 
 			# Take one of the faces and process that
 			if len(faces) > 0:
-				FacedetectorConsumer.LOGGER.info('Face detected')
 				(x, y, w, h) = faces[0]
 				context.alert = True
-				context.data = grey_img[y:(y + h), x:(x + w)]
+				context.alert_data = 'Face detected'
+				context.data = img[y:(y + h), x:(x + w)]
+				FacedetectorConsumer.LOGGER.info(context.alert_data)
 			else:
 				FacedetectorConsumer.LOGGER.debug('Could not detect any faces')
 		else:

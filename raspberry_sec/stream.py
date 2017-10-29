@@ -84,7 +84,10 @@ class Stream(ProcessReady):
 
 				if c_context.alert:
 					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
-					sc_queue.put(StreamControllerMessage(_alert=c_context.alert, _msg=c_context.data, _sender=self.name))
+					sc_queue.put(StreamControllerMessage(
+						_alert=c_context.alert,
+						_msg=c_context.alert_data,
+						_sender=self.name))
 			except Exception as e:
 				Stream.LOGGER.error('Something really bad happened: ' + e.__str__())
 
@@ -154,6 +157,7 @@ class StreamController(ProcessReady):
 			sc_messages = [msg for msg in msg_list if msg.alert]
 			if sc_messages:
 				StreamController.LOGGER.debug(sender + ' reported ' + str(len(sc_messages)) + ' alerts')
+
 				action_messages += [ActionMessage(scm.msg) for scm in sc_messages]
 				query = query.replace('@' + sender.upper() + '@', 'True')
 			else:
@@ -176,7 +180,7 @@ class StreamController(ProcessReady):
 		# iterate through messages in queue
 		with ThreadPoolExecutor(max_workers=4) as executor:
 			while True:
-				StreamController.LOGGER.debug('Checking message queue')
+				StreamController.LOGGER.info('Checking message queue')
 				messages = []
 				count = 0
 

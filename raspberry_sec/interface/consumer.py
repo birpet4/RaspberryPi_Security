@@ -2,14 +2,16 @@ class ConsumerContext:
 	"""
 	Class for storing data when transitioning between Consumer-s
 	"""
-	def __init__(self, _data, _alert: bool):
+	def __init__(self, _data, _alert: bool, _alert_data=None):
 		"""
 		Constructor
 		:param _data: sample data
 		:param _alert: True or False
+		:param _alert_data: data to be reported in case of an alert
 		"""
 		self.data = _data
 		self.alert = _alert
+		self.alert_data = _alert_data
 
 
 class Consumer:

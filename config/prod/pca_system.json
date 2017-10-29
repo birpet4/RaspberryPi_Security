@@ -8,7 +8,6 @@
                 "from_addr": "mt.raspberry.pi@gmail.com",
                 "password": "",
                 "smtp_addr": "smtp.gmail.com:587",
-                "smtp_timeout": 10,
                 "subject": "RaspberryPi ALERT",
                 "to_addr": "mate.torok.de@gmail.com",
                 "user": "mt.raspberry.pi"
@@ -25,10 +24,11 @@
                     "parameters": {
                         "area_threshold": 250,
                         "dilate_iteration": 2,
-                        "resize_height": 240,
-                        "resize_width": 320,
+                        "resize_height": 360,
+                        "resize_width": 640,
                         "threshold": 25,
-                        "threshold_max_val": 255
+                        "threshold_max_val": 255,
+                        "timeout": 1
                     }
                 },
                 {
@@ -36,9 +36,9 @@
                     "parameters": {
                         "padding_x": 16,
                         "padding_y": 16,
-                        "resize_height": 240,
-                        "resize_width": 320,
-                        "scale": 1.23,
+                        "resize_height": 360,
+                        "resize_width": 640,
+                        "scale": 1.25,
                         "timeout": 1,
                         "win_stride_x": 4,
                         "win_stride_y": 4
@@ -63,16 +63,17 @@
                     "parameters": {
                         "area_threshold": 250,
                         "dilate_iteration": 2,
-                        "resize_height": 240,
-                        "resize_width": 320,
+                        "resize_height": 360,
+                        "resize_width": 640,
                         "threshold": 25,
-                        "threshold_max_val": 255
+                        "threshold_max_val": 255,
+                        "timeout": 1
                     }
                 },
                 {
                     "__type__": "FacedetectorConsumer",
                     "parameters": {
-                        "cascade_file": "resource/haarcascade_frontalface_default.xml",
+                        "cascade_file": "resources/haarcascade_frontalface_default.xml",
                         "min_neighbors": 5,
                         "scale_factor": 1.3,
                         "timeout": 1

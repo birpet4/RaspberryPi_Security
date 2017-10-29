@@ -9,7 +9,7 @@ def set_parameters():
 	parameters['padding_y'] = 16
 	parameters['resize_height'] = 360
 	parameters['resize_width'] = 640
-	parameters['scale'] = 1.23
+	parameters['scale'] = 1.25
 	parameters['timeout'] = 1
 	parameters['win_stride_x'] = 4
 	parameters['win_stride_y'] = 4

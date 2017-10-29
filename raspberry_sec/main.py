@@ -3,6 +3,7 @@ import sys
 import logging
 import time
 from multiprocessing import Process, Event, Queue
+sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from raspberry_sec.pca import PCASystemJSONEncoder, PCASystemJSONDecoder
 from raspberry_sec.util import LogQueueListener, ProcessContext, ProcessReady
@@ -48,7 +49,7 @@ def run_pcasystem(env: str, logging_level: int):
 
 
 def main():
-	run_pcasystem('prod', logging.DEBUG)
+	run_pcasystem('prod', logging.INFO)
 
 
 if __name__ == '__main__':
