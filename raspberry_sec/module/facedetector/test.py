@@ -1,29 +1,32 @@
 import cv2
-import numpy as np
+from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer, ConsumerContext
+
+
+def set_parameters():
+	parameters = dict()
+	parameters['cascade_file'] = 'resources/haarcascade_frontalface_default.xml'
+	parameters['min_neighbors'] = 5
+	parameters['scale_factor'] = 1.3
+	parameters['timeout'] = 1
+	return parameters
 
 
 def integration_test():
 	# Given
-	face_cascade = cv2.CascadeClassifier('resource/haarcascade_frontalface_default.xml')
-
-	SCALE_FACTOR = 1.3
-	MIN_NEIGHBORS = 5
+	consumer = FacedetectorConsumer(set_parameters())
+	context = ConsumerContext(None, False)
+	cap = cv2.VideoCapture(0)
 
 	# When
 	try:
-		cap = cv2.VideoCapture(0)
-		crop = np.zeros((300, 300, 3), np.uint8)
-
-		while cv2.waitKey(100) != 10:
-			_, frame = cap.read()
-			grey_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-			faces = face_cascade.detectMultiScale(image=grey_image, scaleFactor=SCALE_FACTOR, minNeighbors=MIN_NEIGHBORS)
-
-			if len(faces):
-				(x, y, w, h) = faces[0]
-				crop = grey_image[y:y + h, x:x + w]
-
-			cv2.imshow('Face', crop)
+		while cv2.waitKey(50) == -1:
+			success, frame = cap.read()
+			if success:
+				context.data = frame
+				consumer.run(context)
+			if context.alert:
+				print('Face Detected')
+				cv2.imshow('Face', context.data)
 	finally:
 		cap.release()
 		cv2.destroyAllWindows()

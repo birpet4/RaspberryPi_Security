@@ -10,7 +10,7 @@ class CameraConsumer(Consumer):
 	"""
 	LOGGER = logging.getLogger('CameraConsumer')
 
-	def __init__(self, parameters: dict):
+	def __init__(self, parameters: dict = dict()):
 		"""
 		Constructor
 		:param parameters: see Consumer constructor

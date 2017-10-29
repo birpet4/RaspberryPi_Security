@@ -1,46 +1,37 @@
 import cv2
+from raspberry_sec.interface.consumer import ConsumerContext
+from raspberry_sec.module.bodydetector.consumer import BodydetectorConsumer
 
 
-def draw_detections(img, rectangles, thickness=1):
-	"""
-	Draws green rectangles around the bodies HOG found
-	:param img: we want to draw in
-	:param rectangles: found by HOG
-	:param thickness: of the rectangles
-	"""
-	for x, y, w, h in rectangles:
-		cv2.rectangle(
-			img,
-			(x, y),
-			(x + w, y + h),
-			(0, 255, 0),
-			thickness)
+def set_parameters():
+	parameters = dict()
+	parameters['padding_x'] = 16
+	parameters['padding_y'] = 16
+	parameters['resize_height'] = 360
+	parameters['resize_width'] = 640
+	parameters['scale'] = 1.23
+	parameters['timeout'] = 1
+	parameters['win_stride_x'] = 4
+	parameters['win_stride_y'] = 4
+	return parameters
 
 
 def integration_test():
 	# Given
-	hog = cv2.HOGDescriptor()
-	hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
-	WIN_STRIDE = (4, 4)
-	PADDING = (16, 16)
-	SCALE = 1.23
-	RESIZE = (320, 240)
+	consumer = BodydetectorConsumer(set_parameters())
+	context = ConsumerContext(None, False)
+	cap = cv2.VideoCapture(0)
 
 	# When
 	try:
-		cap = cv2.VideoCapture(0)
-
-		while cv2.waitKey(100) != 10:
-			_, frame = cap.read()
-			resized_frame = cv2.resize(frame, RESIZE)
-			grey_image = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2GRAY)
-			found, w = hog.detectMultiScale(grey_image, winStride=WIN_STRIDE, padding=PADDING, scale=SCALE)
-			if len(found) > 0:
+		while cv2.waitKey(100) == -1:
+			success, frame = cap.read()
+			if success:
+				context.data = cv2.resize(frame, (640, 360))
+				consumer.run(context)
+			if context.alert:
+				cv2.imshow('Frame', context.data)
 				print('Detected')
-
-			draw_detections(grey_image, found)
-
-			cv2.imshow('feed', grey_image)
 	finally:
 		cap.release()
 		cv2.destroyAllWindows()

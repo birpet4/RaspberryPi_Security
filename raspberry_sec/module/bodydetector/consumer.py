@@ -44,7 +44,7 @@ class BodydetectorConsumer(Consumer):
 		if img is not None:
 			resized_img = cv2.resize(img, (self.parameters['resize_width'], self.parameters['resize_height']))
 			grey_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2GRAY)
-			found, w = self.hog.detectMultiScale(
+			found, _ = self.hog.detectMultiScale(
 				grey_img,
 				winStride=(self.parameters['win_stride_x'], self.parameters['win_stride_y']),
 				padding=(self.parameters['padding_x'], self.parameters['padding_y']),
@@ -52,7 +52,9 @@ class BodydetectorConsumer(Consumer):
 
 			if len(found) > 0:
 				BodydetectorConsumer.LOGGER.info('Body detected')
+				x, y, w, h = found[0]
 				context.alert = True
+				context.data = grey_img
 		else:
 			BodydetectorConsumer.LOGGER.warning('No image')
 			time.sleep(self.parameters['timeout'])
