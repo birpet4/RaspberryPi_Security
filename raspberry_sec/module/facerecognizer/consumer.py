@@ -79,18 +79,16 @@ class FacerecognizerConsumer(Consumer):
 
 		# the data is expected to be the detected face
 		face = context.data
-		context.alert = False
 
 		if face is not None:
 			face = cv2.resize(face, (self.parameters['size'], self.parameters['size']))
 			name = self.recognize(face)
 			if name is None:
-				context.alert = True
+				context.alert = False
 				context.alert_data = 'Cannot recognize face'
-				FacerecognizerConsumer.LOGGER.info(context.alert_data)
 			else:
+				context.alert = True
 				context.alert_data = name
-				FacerecognizerConsumer.LOGGER.info('Recognized: ' + name)
 
 		return context
 
@@ -103,20 +101,27 @@ class FacerecognizerConsumer(Consumer):
 		:return: name if the face was successfully identified by at least 1 of the recognizers or None
 		"""
 		if self.parameters['fisher_enabled']:
-			label, _ = self.fisher_recognizer.predict(face)
+			label, c = self.fisher_recognizer.predict(face)
 			if self.label_to_name.__contains__(label):
-				return self.label_to_name[label]
+				name = self.label_to_name[label]
+				FacerecognizerConsumer.LOGGER.info('FisherRecognizer identified ' + name + ' with ' + str(c))
+				return name
 
 		if self.parameters['eigen_enabled']:
-			label, _ = self.eigen_recognizer.predict(face)
+			label, c = self.eigen_recognizer.predict(face)
 			if self.label_to_name.__contains__(label):
-				return self.label_to_name[label]
+				name = self.label_to_name[label]
+				FacerecognizerConsumer.LOGGER.info('EigenRecognizer identified ' + name + ' with ' + str(c))
+				return name
 
 		if self.parameters['lbph_enabled']:
-			label, _ = self.lbph_recognizer.predict(face)
+			label, c = self.lbph_recognizer.predict(face)
 			if self.label_to_name.__contains__(label):
-				return self.label_to_name[label]
+				name = self.label_to_name[label]
+				FacerecognizerConsumer.LOGGER.info('LBPHRecognizer identified ' + name + ' with ' + str(c))
+				return name
 
+		FacerecognizerConsumer.LOGGER.info('Recognition was not successful')
 		return None
 
 	def get_type(self):

@@ -2,28 +2,32 @@ import cv2
 import os
 import numpy as np
 import json
+import logging
 from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer
 from raspberry_sec.module.facerecognizer.consumer import FacerecognizerConsumer
 from raspberry_sec.interface.consumer import ConsumerContext
 
 
+logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s - %(message)s', level=logging.INFO)
+
+
 def set_parameters():
 	parameters = dict()
-	parameters['eigen_components'] = 10
+	parameters['eigen_components'] = 7
 	parameters['eigen_enabled'] = True
 	parameters['eigen_model'] = 'resources/eigen.yml'
-	parameters['eigen_threshold'] = 4000.0
-	parameters['fisher_components'] = 5
+	parameters['eigen_threshold'] = 2000.0
+	parameters['fisher_components'] = 7
 	parameters['fisher_enabled'] = True
 	parameters['fisher_model'] = 'resources/fisher.yml'
-	parameters['fisher_threshold'] = 600.0
+	parameters['fisher_threshold'] = 400.0
 	parameters['label_map'] = 'resources/labels.json'
 	parameters['lbph_enabled'] = True
 	parameters['lbph_height'] = 7
 	parameters['lbph_model'] = 'resources/lbph.yml'
-	parameters['lbph_neighbors'] = 9
-	parameters['lbph_radius'] = 3
-	parameters['lbph_threshold'] = 80.0
+	parameters['lbph_neighbors'] = 8
+	parameters['lbph_radius'] = 5
+	parameters['lbph_threshold'] = 70.0
 	parameters['lbph_width'] = 7
 	parameters['size'] = 150
 	return parameters
@@ -180,5 +184,5 @@ def produce_training_data(who: str):
 
 if __name__ == '__main__':
 	# produce_training_data('mate_c')
-	# train()
+	train()
 	integration_test()

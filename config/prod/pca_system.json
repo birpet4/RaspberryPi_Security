@@ -13,7 +13,7 @@
                 "user": "mt.raspberry.pi"
             }
         },
-        "query": "@STREAM1@ and @STREAM2@"
+        "query": "@STREAM1@ and not @STREAM2@"
     },
     "streams": [
         {
@@ -82,21 +82,21 @@
                 {
                     "__type__": "FacerecognizerConsumer",
                     "parameters": {
-                        "eigen_components": 10,
+                        "eigen_components": 7,
                         "eigen_enabled": true,
                         "eigen_model": "resources/eigen.yml",
-                        "eigen_threshold": 4000.0,
-                        "fisher_components": 5,
+                        "eigen_threshold": 2000.0,
+                        "fisher_components": 7,
                         "fisher_enabled": true,
                         "fisher_model": "resources/fisher.yml",
-                        "fisher_threshold": 600.0,
+                        "fisher_threshold": 400.0,
                         "label_map": "resources/labels.json",
                         "lbph_enabled": true,
                         "lbph_height": 7,
                         "lbph_model": "resources/lbph.yml",
-                        "lbph_neighbors": 9,
-                        "lbph_radius": 3,
-                        "lbph_threshold": 80.0,
+                        "lbph_neighbors": 8,
+                        "lbph_radius": 5,
+                        "lbph_threshold": 70.0,
                         "lbph_width": 7,
                         "size": 150
                     }
