@@ -25,9 +25,9 @@ class TestConsumer(Consumer):
 		time.sleep(5)
 		TestConsumer.LOGGER.info('Done...')
 		if 10 <= int(context.data):
-			return ConsumerContext('DATA reached 10', True)
+			return ConsumerContext(_alert_data='DATA reached 10', _alert=True)
 		else:
-			return ConsumerContext('data', False)
+			return ConsumerContext(_data='data', _alert=False)
 
 	def get_type(self):
 		return Type.CAMERA

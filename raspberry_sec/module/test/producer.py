@@ -49,12 +49,13 @@ class TestProducer(Producer):
 	def get_data(self, data_proxy: ProducerDataProxy):
 		TestProducer.LOGGER.debug('Producer called')
 		time.sleep(TestProducer.SLEEP_INTERVAL)
+
 		data = data_proxy.get_data()
 		TestProducer.LOGGER.debug(data)
 		return data
 
 	def get_name(self):
-			return 'TestProducer'
+		return 'TestProducer'
 
 	def get_type(self):
 		return Type.CAMERA

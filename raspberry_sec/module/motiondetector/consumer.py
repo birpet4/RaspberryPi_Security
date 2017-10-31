@@ -58,6 +58,8 @@ class MotiondetectorConsumer(Consumer):
 			context.alert = True
 			context.alert_data = 'Motion detected'
 			MotiondetectorConsumer.LOGGER.info('Motion detected')
+		else:
+			MotiondetectorConsumer.LOGGER.debug('No motion was detected')
 
 		self.previous_frame = gray
 		return context

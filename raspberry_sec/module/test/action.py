@@ -22,3 +22,4 @@ class TestAction(Action):
 	def fire(self, msg: list):
 		TestAction.LOGGER.info('Action fired: ' + '; '.join([m.data for m in msg]))
 		time.sleep(5)
+		TestAction.LOGGER.info('Action finished')

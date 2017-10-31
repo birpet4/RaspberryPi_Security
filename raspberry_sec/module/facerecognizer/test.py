@@ -1,8 +1,11 @@
 import cv2
 import os
+import sys
 import numpy as np
 import json
 import logging
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer
 from raspberry_sec.module.facerecognizer.consumer import FacerecognizerConsumer
 from raspberry_sec.interface.consumer import ConsumerContext
@@ -53,10 +56,12 @@ def integration_test():
 	try:
 		while cv2.waitKey(50) == -1:
 			success, frame = cap.read()
+			# Detection
 			if success:
 				context.data = frame
 				detector_consumer.run(context)
 				face = context.data
+			# Recognition
 			if context.alert:
 				recognizer_consumer.run(context)
 				cv2.putText(face, context.alert_data, (5, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)

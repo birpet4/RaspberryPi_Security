@@ -47,7 +47,7 @@ class CameraProducer(Producer):
 				else:
 					unsuccessful_images += 1
 					CameraProducer.LOGGER.warning('Could not capture image')
-					# if too many errors happened we rather kill this process later
+					# if too many errors happen we better kill this process
 					if unsuccessful_images == self.parameters['unsuccessful_limit']:
 						break
 

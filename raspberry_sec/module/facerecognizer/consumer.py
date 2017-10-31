@@ -1,6 +1,5 @@
 import logging
 import json
-import os
 from raspberry_sec.interface.producer import Type
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
@@ -67,7 +66,7 @@ class FacerecognizerConsumer(Consumer):
 				names_with_labels = json.load(label_file)
 				self.label_to_name = {value: key for key, value in names_with_labels.items()}
 		except Exception:
-			FacerecognizerConsumer.LOGGER.error('Cannot read the label file: ' + label_map_path)
+			FacerecognizerConsumer.LOGGER.warning('Cannot read the label file: ' + label_map_path)
 			self.label_to_name = dict()
 
 		self.initialized = True
@@ -89,6 +88,9 @@ class FacerecognizerConsumer(Consumer):
 			else:
 				context.alert = True
 				context.alert_data = name
+		else:
+			context.alert = False
+			FacerecognizerConsumer.LOGGER.warning('Face was not provided (is None)')
 
 		return context
 

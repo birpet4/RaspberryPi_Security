@@ -5,7 +5,7 @@ class ConsumerContext:
 	def __init__(self, _data, _alert: bool, _alert_data=None):
 		"""
 		Constructor
-		:param _data: sample data
+		:param _data: sample data the consumers work on
 		:param _alert: True or False
 		:param _alert_data: data to be reported in case of an alert
 		"""
