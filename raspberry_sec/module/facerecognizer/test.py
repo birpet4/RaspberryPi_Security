@@ -19,20 +19,20 @@ def set_parameters():
 	parameters['eigen_components'] = 7
 	parameters['eigen_enabled'] = True
 	parameters['eigen_model'] = 'resources/eigen.yml'
-	parameters['eigen_threshold'] = 2000.0
+	parameters['eigen_threshold'] = 2500.0
 	parameters['fisher_components'] = 7
 	parameters['fisher_enabled'] = True
 	parameters['fisher_model'] = 'resources/fisher.yml'
-	parameters['fisher_threshold'] = 400.0
+	parameters['fisher_threshold'] = 500.0
 	parameters['label_map'] = 'resources/labels.json'
 	parameters['lbph_enabled'] = True
 	parameters['lbph_height'] = 7
 	parameters['lbph_model'] = 'resources/lbph.yml'
 	parameters['lbph_neighbors'] = 8
 	parameters['lbph_radius'] = 5
-	parameters['lbph_threshold'] = 70.0
+	parameters['lbph_threshold'] = 80.0
 	parameters['lbph_width'] = 7
-	parameters['size'] = 150
+	parameters['size'] = 100
 	return parameters
 
 
