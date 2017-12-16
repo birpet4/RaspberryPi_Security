@@ -98,32 +98,43 @@ class FacerecognizerConsumer(Consumer):
 		"""
 		This method decides if the face is among those that are to be recognized.
 		It uses 3 different recognition algorithms for this (Eigen, Fisher, LBPH).
-		Though these can be disabled by the configuration.
+		Though any of these can be disabled by the configuration.
 		:param face: detected face
 		:return: name if the face was successfully identified by at least 1 of the recognizers or None
 		"""
-		if self.parameters['fisher_enabled']:
-			label, c = self.fisher_recognizer.predict(face)
-			if self.label_to_name.__contains__(label):
-				name = self.label_to_name[label]
-				FacerecognizerConsumer.LOGGER.info('FisherRecognizer identified ' + name + ' with ' + str(c))
-				return name
+		FacerecognizerConsumer.LOGGER.info('Starting recognition')
+		# Get the recognition results
+		names = {
+			self.recognize_face(self.parameters['fisher_enabled'], 'FisherRecognizer', face, self.fisher_recognizer),
+			self.recognize_face(self.parameters['eigen_enabled'], 'EigenRecognizer', face, self.eigen_recognizer),
+			self.recognize_face(self.parameters['lbph_enabled'], 'LBPHRecognizer', face, self.lbph_recognizer)
+		}
 
-		if self.parameters['eigen_enabled']:
-			label, c = self.eigen_recognizer.predict(face)
-			if self.label_to_name.__contains__(label):
-				name = self.label_to_name[label]
-				FacerecognizerConsumer.LOGGER.info('EigenRecognizer identified ' + name + ' with ' + str(c))
-				return name
+		# Filter out None-s
+		names = {name for name in names if name is not None}
 
-		if self.parameters['lbph_enabled']:
-			label, c = self.lbph_recognizer.predict(face)
-			if self.label_to_name.__contains__(label):
-				name = self.label_to_name[label]
-				FacerecognizerConsumer.LOGGER.info('LBPHRecognizer identified ' + name + ' with ' + str(c))
-				return name
+		# If there is onlyon name in the set, the result is unambiguous
+		if len(names) == 1:
+			return names.pop()
+		else:
+			return None
 
-		FacerecognizerConsumer.LOGGER.info('Recognition was not successful')
+	def recognize_face(self, enabled: bool, name: str, face, recognizer):
+		"""
+		Conducts face recognition
+		:param enabled: if False, None is returned
+		:param name: of the technique used for recognition
+		:param face: numpy object
+		:param recognizer: method object
+		:return: name of the recognized person, or None
+		"""
+		if enabled:
+			label, c = recognizer.predict(face)
+			if self.label_to_name.__contains__(label):
+				recognized = self.label_to_name[label]
+				FacerecognizerConsumer.LOGGER.info(name + ' identified ' + recognized + ' with ' + str(c))
+				return recognized
+
 		return None
 
 	def get_type(self):

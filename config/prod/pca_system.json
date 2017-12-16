@@ -34,11 +34,11 @@
                 {
                     "__type__": "BodydetectorConsumer",
                     "parameters": {
-                        "padding_x": 16,
-                        "padding_y": 16,
-                        "resize_height": 360,
-                        "resize_width": 640,
-                        "scale": 1.25,
+                        "padding_x": 8,
+                        "padding_y": 8,
+                        "resize_height": 240,
+                        "resize_width": 320,
+                        "scale": 1.15,
                         "timeout": 1,
                         "win_stride_x": 4,
                         "win_stride_y": 4
@@ -89,16 +89,16 @@
                         "fisher_components": 7,
                         "fisher_enabled": true,
                         "fisher_model": "resources/fisher.yml",
-                        "fisher_threshold": 400.0,
+                        "fisher_threshold": 500.0,
                         "label_map": "resources/labels.json",
                         "lbph_enabled": true,
                         "lbph_height": 7,
                         "lbph_model": "resources/lbph.yml",
                         "lbph_neighbors": 8,
                         "lbph_radius": 5,
-                        "lbph_threshold": 70.0,
+                        "lbph_threshold": 80.0,
                         "lbph_width": 7,
-                        "size": 150
+                        "size": 100
                     }
                 }
             ],

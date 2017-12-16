@@ -7,4 +7,9 @@ It aims to provide a configurable and extensible framework that can easily accom
 
 ## Architecture
 The system (PCA = Producer-Consumer-Action) is a dynamically extensible container. 
-If the new components adhere to certain rules they can easily be integrated into the architecture.
+If new components adhere to certain rules they can easily be integrated into the architecture.
+
+## Requirements
+* WebCam
+* Python3.5
+* Pip (package manager)
