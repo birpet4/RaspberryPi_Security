@@ -1,73 +1,7 @@
 import importlib
 import pkgutil
 import logging
-from multiprocessing import Queue, Event
-
-
-class QueueHandler(logging.Handler):
-	"""
-	This is a logging handler which sends events to a multiprocessing queue.
-	"""
-	def __init__(self, queue: Queue):
-		"""
-		Constructor
-		"""
-		logging.Handler.__init__(self)
-		self.queue = queue
-
-	def emit(self, record):
-		"""
-		Writes the LogRecord into the queue.
-		"""
-		try:
-			self.queue.put_nowait(record)
-		except:
-			self.handleError(record)
-
-	def get_name(self):
-		"""
-		:return: name of the object
-		"""
-		return 'QueueHandler'
-
-	def __eq__(self, other):
-		"""
-		:param other object
-		:return: True or False depending on the name
-		"""
-		return self.get_name() == other.get_name()
-
-	def __hash__(self):
-		"""
-		:return: hash code
-		"""
-		return hash(self.get_name())
-
-
-class LogQueueListener:
-	"""
-	Class representing a listener that should run in a separate process.
-	This will listen to a queue (log-queue) and take care of the log records
-	in a safe manner (inter-process communication).
-	"""
-	def __init__(self, _format: str, _level: int=logging.DEBUG):
-		self.format = _format
-		self.level = _level
-
-	def run(self, logging_queue: Queue):
-		"""
-		This method is a loop that listens for incoming records.
-		:param logging_queue: log-record queue
-		"""
-		logging.basicConfig(format=self.format, level=self.level)
-		while True:
-			try:
-				record = logging_queue.get()
-				logger = logging.getLogger(record.name)
-				if logger.isEnabledFor(record.levelno):
-					logger.handle(record)
-			except:
-				raise
+from multiprocessing import Queue, Event, Process
 
 
 class Loader:
@@ -152,6 +86,21 @@ class ProcessContext:
 		"""
 		return self.kwargs[name]
 
+	@staticmethod
+	def create_process(target, name, args):
+		"""
+		This method takes care of Process creation
+		:param target: for the new process
+		:param name: of the new process
+		:param args: arguments
+		:return: newly created Process
+		"""
+		return Process(
+			target=target,
+			name=name,
+			args=args
+		)
+
 
 class ProcessReady:
 	"""
@@ -179,3 +128,72 @@ class ProcessReady:
 		Main functionality
 		"""
 		pass
+
+
+class QueueHandler(logging.Handler):
+	"""
+	This is a logging handler which sends events to a multiprocessing queue.
+	"""
+	def __init__(self, queue: Queue):
+		"""
+		Constructor
+		"""
+		logging.Handler.__init__(self)
+		self.queue = queue
+
+	def emit(self, record):
+		"""
+		Writes the LogRecord into the queue.
+		"""
+		try:
+			self.queue.put_nowait(record)
+		except:
+			self.handleError(record)
+
+	def get_name(self):
+		"""
+		:return: name of the object
+		"""
+		return 'QueueHandler'
+
+	def __eq__(self, other):
+		"""
+		:param other object
+		:return: True or False depending on the name
+		"""
+		return self.get_name() == other.get_name()
+
+	def __hash__(self):
+		"""
+		:return: hash code
+		"""
+		return hash(self.get_name())
+
+
+class LogQueueListener:
+	"""
+	Class representing a listener that should run in a separate process.
+	This will listen to a queue (log-queue) and take care of the log records
+	in a safe manner (inter-process communication).
+	"""
+	def __init__(self, _format: str, _level: int=logging.DEBUG):
+		self.format = _format
+		self.level = _level
+
+	def run(self, context: ProcessContext):
+		"""
+		This method is a loop that listens for incoming records.
+		:param context: log-record queue + stop event
+		"""
+		logging.basicConfig(format=self.format, level=self.level)
+		logging_queue = context.logging_queue
+
+		# Normal operation
+		while True:
+			try:
+				record = logging_queue.get()
+				logger = logging.getLogger(record.name)
+				if logger.isEnabledFor(record.levelno):
+					logger.handle(record)
+			except:
+				raise

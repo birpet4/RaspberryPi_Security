@@ -83,10 +83,10 @@ class FacerecognizerConsumer(Consumer):
 			face = cv2.resize(face, (self.parameters['size'], self.parameters['size']))
 			name = self.recognize(face)
 			if name is None:
-				context.alert = False
+				context.alert = True
 				context.alert_data = 'Cannot recognize face'
 			else:
-				context.alert = True
+				context.alert = False
 				context.alert_data = name
 		else:
 			context.alert = False

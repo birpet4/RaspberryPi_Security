@@ -116,6 +116,7 @@ class StreamController(ProcessReady):
 	LOGGER = logging.getLogger('StreamController')
 	PLACEHOLDER_PATTERN = '@.*?@'
 	POLLING_INTERVAL = 3
+	MESSAGE_LIMIT = 100
 
 	def __init__(self):
 		"""
@@ -175,7 +176,6 @@ class StreamController(ProcessReady):
 		:param context: Process context
 		"""
 		message_queue = context.get_prop('message_queue')
-		message_limit = context.get_prop('message_limit')
 
 		# iterate through messages in queue
 		with ThreadPoolExecutor(max_workers=4) as executor:
@@ -185,7 +185,7 @@ class StreamController(ProcessReady):
 				count = 0
 
 				# fetch messages
-				while not message_queue.empty() and count <= message_limit:
+				while not message_queue.empty() and count <= StreamController.MESSAGE_LIMIT:
 					messages.append(message_queue.get(block=False))
 					count += 1
 

@@ -2,7 +2,7 @@ import json
 import logging
 from json import JSONEncoder
 from json import JSONDecoder
-from multiprocessing import Queue, Process
+from multiprocessing import Queue
 from raspberry_sec.util import Loader, DynamicLoader, ProcessContext, ProcessReady
 from raspberry_sec.stream import StreamController, Stream
 from raspberry_sec.interface.producer import Producer, ProducerDataManager
@@ -85,10 +85,10 @@ class PCASystem(ProcessReady):
 			log_queue=context.logging_queue,
 			shared_data_proxy=self.prod_to_proxy[producer]
 		)
-		return Process(
+		return ProcessContext.create_process(
 			target=producer.start,
 			name=producer.get_name(),
-			args=(proc_context,)
+			args=(proc_context, )
 		)
 
 	def resurrect_producers(self, context: ProcessContext):
@@ -141,10 +141,9 @@ class PCASystem(ProcessReady):
 		sc_context = ProcessContext(
 			log_queue=context.logging_queue,
 			stop_event=context.stop_event,
-			message_limit=len(self.streams) * 2,
 			message_queue=self.sc_queue
 		)
-		self.sc_process = Process(
+		self.sc_process = ProcessContext.create_process(
 			target=self.stream_controller.start,
 			name='SC process',
 			args=(sc_context, )
@@ -165,10 +164,10 @@ class PCASystem(ProcessReady):
 				shared_data_proxy=self.prod_to_proxy[stream.producer],
 				sc_queue=self.sc_queue
 			)
-			proc = Process(
+			proc = ProcessContext.create_process(
 				target=stream.start,
 				name=stream.get_name(),
-				args=(s_context,)
+				args=(s_context, )
 			)
 			self.stream_processes.append(proc)
 
@@ -185,17 +184,17 @@ class PCASystem(ProcessReady):
 			context.stop_event.wait(timeout=PCASystem.POLLING_INTERVAL)
 			self.resurrect_producers(context)
 
-		PCASystem.LOGGER.debug('Stop event arrived')
+		PCASystem.LOGGER.info('Stop event arrived')
 
 		stream_proc_count = str(len(self.stream_processes))
-		PCASystem.LOGGER.debug('Number of stream processes to be stopped: ' + stream_proc_count)
+		PCASystem.LOGGER.info('Number of stream processes to be stopped: ' + stream_proc_count)
 		for process in self.stream_processes:
 			process.terminate()
 
-		PCASystem.LOGGER.debug('Stopping stream controller')
+		PCASystem.LOGGER.info('Stopping stream controller')
 		self.sc_process.terminate()
 
-		PCASystem.LOGGER.debug('Waiting for producers')
+		PCASystem.LOGGER.info('Waiting for producers')
 		for prod, proc in self.prod_to_proc.items():
 			proc.join()
 
