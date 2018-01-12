@@ -192,6 +192,8 @@ class LogQueueListener:
 		while True:
 			try:
 				record = logging_queue.get()
+				if record is None:
+					break
 				logger = logging.getLogger(record.name)
 				if logger.isEnabledFor(record.levelno):
 					logger.handle(record)

@@ -1,7 +1,8 @@
 import logging
 import time
+
 from raspberry_sec.interface.producer import Producer, ProducerDataProxy, ProducerDataManager, Type
-from raspberry_sec.util import ProcessContext
+from raspberry_sec.system.util import ProcessContext
 
 
 class TestDataProxy(ProducerDataProxy):

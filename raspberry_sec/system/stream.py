@@ -1,11 +1,12 @@
-import time
 import logging
 import re
-from itertools import groupby
+import time
 from concurrent.futures import ThreadPoolExecutor
-from raspberry_sec.interface.consumer import ConsumerContext
+from itertools import groupby
+
 from raspberry_sec.interface.action import ActionMessage
-from raspberry_sec.util import ProcessContext, ProcessReady
+from raspberry_sec.interface.consumer import ConsumerContext
+from raspberry_sec.system.util import ProcessContext, ProcessReady
 
 
 class Stream(ProcessReady):

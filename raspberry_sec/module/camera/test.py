@@ -1,13 +1,14 @@
+import os
+import sys
+import time
 from multiprocessing import Process, Event
 from threading import Thread
-import time
-import sys
-import os
+
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.camera.producer import CameraProducer
 from raspberry_sec.module.camera.consumer import CameraConsumer, ConsumerContext
-from raspberry_sec.util import ProcessContext
+from raspberry_sec.system.util import ProcessContext
 from raspberry_sec.interface.producer import ProducerDataProxy, ProducerDataManager
 
 

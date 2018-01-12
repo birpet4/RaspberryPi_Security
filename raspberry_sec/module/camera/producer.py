@@ -1,6 +1,7 @@
 import logging
+
 from raspberry_sec.interface.producer import Producer, ProducerDataManager, ProducerDataProxy, Type
-from raspberry_sec.util import ProcessContext
+from raspberry_sec.system.util import ProcessContext
 
 
 class CameraProducerDataProxy(ProducerDataProxy):

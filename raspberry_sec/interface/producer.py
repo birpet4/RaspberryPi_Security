@@ -1,6 +1,7 @@
-from multiprocessing.managers import BaseManager
-from raspberry_sec.util import ProcessContext, ProcessReady
 from enum import Enum
+from multiprocessing.managers import BaseManager
+
+from raspberry_sec.system.util import ProcessContext, ProcessReady
 
 
 class Type(Enum):
