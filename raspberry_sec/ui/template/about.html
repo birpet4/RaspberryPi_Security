@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+        <li><a href="configure">Configure</a></li>
+        <li><a href="control">Control</a></li>
+        <li><a href="feed">Feed</a></li>
+        <li class="active"><a>About<span class="sr-only">(current)</span></a></li>
+      </ul>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <h1 class="page-header">PCA: Producer-Consumer-Action System</h1>
+        This is the web-management interface of PCA.
+    </div>
+</div>
+
+{% end body %}

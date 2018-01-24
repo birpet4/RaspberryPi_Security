@@ -83,10 +83,10 @@ class FacerecognizerConsumer(Consumer):
 			face = cv2.resize(face, (self.parameters['size'], self.parameters['size']))
 			name = self.recognize(face)
 			if name is None:
-				context.alert = True
+				context.alert = False
 				context.alert_data = 'Cannot recognize face'
 			else:
-				context.alert = False
+				context.alert = True
 				context.alert_data = name
 		else:
 			context.alert = False
@@ -113,7 +113,7 @@ class FacerecognizerConsumer(Consumer):
 		# Filter out None-s
 		names = {name for name in names if name is not None}
 
-		# If there is onlyon name in the set, the result is unambiguous
+		# If there is only one name in the set, the result is unambiguous
 		if len(names) == 1:
 			return names.pop()
 		else:

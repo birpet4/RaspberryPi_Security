@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+        <ul class="nav nav-sidebar">
+            <li class="active"><a>Configure<span class="sr-only">(current)</span></a></li>
+            <li><a href="control">Control</a></li>
+            <li><a href="feed">Feed</a></li>
+            <li><a href="about">About</a></li>
+        </ul>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="row">
+            <div class="form-group">
+                <label for="cfg_textarea">System configuration:</label>
+                <textarea class="form-control" rows="20" id="cfg_textarea">
+                    {{ configuration }}
+                </textarea>
+            </div>
+        </div>
+        <div class="row pull-right">
+            <button type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+
+{% end body %}

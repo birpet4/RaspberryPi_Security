@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+        <li><a href="configure">Configure</a></li>
+        <li class="active"><a>Control<span class="sr-only">(current)</span></a></li>
+        <li><a href="feed">Feed</a></li>
+        <li><a href="about">About</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <table class="table">
+            <tr>
+                <th>Status:</th>
+                <td id="ctrl_status">{{ status }}</td>
+            </tr>
+            <tr>
+                <th></th>
+                <td>
+                    <button type="button" id="ctrl_start" class="btn btn-success">Start</button>
+                    <button type="button" id="ctrl_stop" class="btn btn-danger">Stop</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+{% end body %}

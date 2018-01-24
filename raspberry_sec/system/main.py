@@ -1,39 +1,85 @@
 import logging
 import multiprocessing as mp
-import os
-import sys
 from multiprocessing import Event, Queue
 from threading import Thread
-sys.path.append(os.path.dirname(__file__))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from raspberry_sec.system.pca import PCASystemJSONDecoder
 from raspberry_sec.system.util import LogQueueListener, ProcessContext, ProcessReady
 
 
-def start_logging_process(ctx: ProcessContext, level: int):
+class PCARuntime:
 	"""
-	Starts the process that collects and outputs the log-records
-	:param ctx: context
-	:param level: level of logging (e.g. logging.INFO)
-	:return logging process
+	Container class for the environment
 	"""
-	log_listener = LogQueueListener(
+	def __init__(self, pca_system):
+		"""
+		Constructor
+		:param pca_system: PCASystem instance
+		:param log_process: Process object of the logging process
+		"""
+		self.pca_system = pca_system
+		self.pca_thread = None
+		self.log_process = None
+		self.log_queue = None
+		self.stop_event = None
+
+	@staticmethod
+	def load_pca(config_path: str):
+		"""
+		Loads the PCASystem using the given config file
+		:param config_path: file
+		:return: PCASystem object
+		"""
+		abs_path = os.path.join(os.path.dirname(__file__), '../..', config_path)
+		return PCASystemJSONDecoder.load_from_config(abs_path)
+
+	@staticmethod
+	def create_logging_process(ctx: ProcessContext, level: int):
+		"""
+		Creates the process that collects and outputs log-records
+		:param ctx: context
+		:param level: level of logging (e.g. logging.INFO)
+		:return logging process
+		"""
+		log_listener = LogQueueListener(
 			_format='[%(levelname)s]:[%(asctime)s]:[%(processName)s,%(threadName)s]:%(name)s - %(message)s',
 			_level=level)
+		return ProcessContext.create_process(target=log_listener.run, name='LogListener', args=(ctx,))
 
-	proc = ProcessContext.create_process(target=log_listener.run, name='LogListener', args=(ctx, ))
-	proc.start()
+	def start(self, log_level: int):
+		"""
+		Starts the components
+		:param log_level: LOGGING level
+		"""
+		self.log_queue = Queue()
+		self.stop_event = Event()
+		self.stop_event.clear()
 
-	return proc
+		# Create logging process
+		pca_context = ProcessContext(log_queue=self.log_queue, stop_event=self.stop_event)
+		self.log_process = PCARuntime.create_logging_process(pca_context, log_level)
 
+		# Setup logging for current process
+		ProcessReady.setup_logging(self.log_queue)
 
-def load_pca(config_path: str):
-	"""
-	Loads the PCA System from the JSON configuration
-	:param config_path: to JSON configuration
-	:return: loaded PCA system
-	"""
-	return PCASystemJSONDecoder.load_from_config(config_path)
+		# PCA
+		self.pca_thread = Thread(target=self.pca_system.run, name='PCA', args=(pca_context,))
+
+		# START
+		self.log_process.start()
+		self.pca_thread.start()
+
+	def stop(self):
+		"""
+		Stops the components
+		"""
+		# PCA
+		self.stop_event.set()
+		self.pca_thread.join()
+		# Logging
+		self.log_queue.put(None)
+		self.log_process.join()
 
 
 def run_pcasystem(env: str, logging_level: int):
@@ -43,34 +89,13 @@ def run_pcasystem(env: str, logging_level: int):
 	:param env: test/prod
 	:param logging_level: level of logging, e.g. INFO
 	"""
-	try:
-		config_file = '../config/' + env + '/pca_system.json'
-		logging_queue = Queue()
-		logging_event = Event()
-		logging_event.clear()
-		stop_event = Event()
-		stop_event.clear()
-		pca_context = ProcessContext(log_queue=logging_queue, stop_event=stop_event)
+	config_file = os.path.join('config', env, 'pca_system.json')
+	pca_context = PCARuntime(PCARuntime.load_pca(config_file))
+	pca_context.start(log_level=logging_level)
 
-		# Initiate logging process
-		logging_process = start_logging_process(pca_context, logging_level)
+	input('Please press enter to exit...')
 
-		# Setup logging for current process
-		ProcessReady.setup_logging(logging_queue)
-
-		# Start PCA
-		pca_system = load_pca(config_file)
-		pca_thread = Thread(target=pca_system.run, name='PCA', args=(pca_context, ))
-		pca_thread.start()
-
-		input('Please press enter to exit...')
-	finally:
-		# Stop PCA System
-		stop_event.set()
-		pca_thread.join()
-		# Stop logging
-		logging_queue.put(None)
-		logging_process.join()
+	pca_context.stop()
 
 
 if __name__ == '__main__':
