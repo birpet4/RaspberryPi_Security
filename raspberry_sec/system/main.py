@@ -90,12 +90,11 @@ def run_pcasystem(env: str, logging_level: int):
 	:param logging_level: level of logging, e.g. INFO
 	"""
 	config_file = os.path.join('config', env, 'pca_system.json')
-	pca_context = PCARuntime(PCARuntime.load_pca(config_file))
-	pca_context.start(log_level=logging_level)
+	pca_runtime = PCARuntime(PCARuntime.load_pca(config_file))
+	pca_runtime.start(log_level=logging_level)
 
 	input('Please press enter to exit...')
-
-	pca_context.stop()
+	pca_runtime.stop()
 
 
 if __name__ == '__main__':

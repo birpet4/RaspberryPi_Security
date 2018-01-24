@@ -83,7 +83,10 @@ body {
  */
 textarea#cfg_textarea {
     resize: none;
-    width: 100%;
+}
+
+#cfg_info_alert {
+    display: none;
 }
 
 /*

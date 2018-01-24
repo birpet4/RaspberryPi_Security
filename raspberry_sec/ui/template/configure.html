@@ -13,15 +13,25 @@
     </div>
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <div class="row">
-            <div class="form-group">
-                <label for="cfg_textarea">System configuration:</label>
-                <textarea class="form-control" rows="20" id="cfg_textarea">
-                    {{ configuration }}
-                </textarea>
+            <!-- INFO alert -->
+            <div class="alert alert-info" id="cfg_info_alert">
+                <button type="button" class="close" data-dismiss="alert">x</button>
             </div>
         </div>
-        <div class="row pull-right">
-            <button type="button" class="btn btn-primary">Save</button>
+        <div class="row">
+            <form id="cfg_form" name="cfg_form" method="POST" action="configure">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="cfg_textarea">System configuration:</label>
+                        <textarea class="form-control" name="cfg_content" rows="20" id="cfg_textarea">
+                            {{ configuration }}
+                        </textarea>
+                    </div>
+                </div>
+                <div class="row pull-right">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

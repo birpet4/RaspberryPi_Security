@@ -15,13 +15,13 @@
         <table class="table">
             <tr>
                 <th>Status:</th>
-                <td id="ctrl_status">{{ status }}</td>
+                <td id="ctrl_status">{{ status['text'] }}</td>
             </tr>
             <tr>
                 <th></th>
                 <td>
-                    <button type="button" id="ctrl_start" class="btn btn-success">Start</button>
-                    <button type="button" id="ctrl_stop" class="btn btn-danger">Stop</button>
+                    <button type="button" {{ status['start'] }} id="ctrl_start" class="btn btn-success">Start</button>
+                    <button type="button" {{ status['stop'] }} id="ctrl_stop" class="btn btn-danger">Stop</button>
                 </td>
             </tr>
         </table>
