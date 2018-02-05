@@ -6,6 +6,7 @@ import os, sys
 import logging
 import base64
 import cv2
+import socket
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from raspberry_sec.system.main import PCARuntime
 from raspberry_sec.interface.producer import Type
@@ -21,6 +22,9 @@ class BaseHandler(tornado.web.RequestHandler):
         self.shared_data = shared_data
 
     def get_pca_runtime(self):
+        """
+        :return: None or PCARuntime object
+        """
         if self.shared_data.__contains__(BaseHandler.PCA_RUNTIME):
             return self.shared_data[BaseHandler.PCA_RUNTIME]
         else:
@@ -147,12 +151,18 @@ class FeedHandler(BaseHandler):
         else:
             producers = []
 
-        self.render('feed.html', producers=producers)
+        self.render('feed.html', producers=producers, ip=socket.gethostbyname(socket.gethostname()))
 
 
 class FeedWebSocketHandler(tornado.websocket.WebSocketHandler, BaseHandler):
 
     LOGGER = logging.getLogger('FeedWebSocketHandler')
+
+    def check_origin(self, origin):
+        """
+        For cross origin checking
+        """
+        return True
 
     def open(self):
         """
@@ -209,6 +219,9 @@ class AboutHandler(BaseHandler):
 class LoginHandler(BaseHandler):
 
     def get(self):
+        """
+        Returns feed.html
+        """
         self.render('login.html')
 
 
