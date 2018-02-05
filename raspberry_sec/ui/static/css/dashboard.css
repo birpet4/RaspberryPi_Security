@@ -84,7 +84,6 @@ body {
 textarea#cfg_textarea {
     resize: none;
 }
-
 #cfg_info_alert {
     display: none;
 }

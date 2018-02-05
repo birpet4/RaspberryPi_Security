@@ -1,16 +1,19 @@
 // Feed
-/*$(document > feed_content).ready(function() {
-    var ws = new WebSocket('ws://localhost:8080/feed/websocket');
+$('.dropdown-menu li a').click(function() {
+    var selected = $(this).text();
+    $('#feed_dropdown:first-child').html(selected + ' <span class="caret"></span>');
 
-    ws.onmessage = function(e) {
-       alert(e.data);
+    var ws = new WebSocket('ws://localhost:59787/feed/websocket');
+
+    ws.onmessage = function(content) {
+       $('#feed_content').html(content.data);
+       setTimeout(() => ws.send(selected), 1000);
     };
 
     ws.onopen = function(e) {
-        ws.send('OLA');
+        ws.send(selected);
     };
-})*/
-
+});
 
 // Configure
 $('#cfg_form').submit(function(e){
@@ -28,7 +31,6 @@ $('#cfg_form').submit(function(e){
     });
     return false;
 });
-
 
 // Control
 $('#ctrl_start').click(function(){
@@ -51,6 +53,5 @@ $('#ctrl_stop').click(function(){
         }
     });
 });
-
 
 // Login
