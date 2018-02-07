@@ -1,3 +1,9 @@
+// Base
+$(document).ready(function() {
+    if(window.location.pathname === '/login')
+        $('#logout_btn').hide();
+});
+
 // Feed
 $('.dropdown-menu li a').click(function() {
     var selected = $(this).text();
@@ -29,7 +35,6 @@ $('#cfg_form').submit(function(e){
             });
         }
     });
-    return false;
 });
 
 // Control
@@ -55,3 +60,22 @@ $('#ctrl_stop').click(function(){
 });
 
 // Login
+$('#login_form').submit(function(){
+    $('#logout_btn').show();
+    $.ajax({
+        type : 'POST',
+        data : $('#login_form').serialize(),
+        url : 'login'
+    });
+});
+
+// Logout
+$('#logout_btn').click(function(){
+    $.ajax({
+        type : 'DELETE',
+        url : 'login',
+        success : function(data){
+            location.reload();
+        }
+    });
+});

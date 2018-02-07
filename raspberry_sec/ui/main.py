@@ -1,12 +1,7 @@
-import tornado.ioloop
-import tornado.web
-import tornado.websocket
+import tornado.ioloop, tornado.web, tornado.websocket
 import multiprocessing as mp
-import os, sys
-import logging
-import base64
+import os, sys, logging, uuid, base64, socket
 import cv2
-import socket
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from raspberry_sec.system.main import PCARuntime
 from raspberry_sec.interface.producer import Type
@@ -33,11 +28,18 @@ class BaseHandler(tornado.web.RequestHandler):
     def set_pca_runtime(self, value):
         self.shared_data[BaseHandler.PCA_RUNTIME] = value
 
+    def get_current_user(self):
+        """
+        Returns secure cookie content
+        """
+        return self.get_secure_cookie('admin')
+
 
 class MainHandler(BaseHandler):
 
     LOGGER = logging.getLogger('MainHandler')
 
+    @tornado.web.authenticated
     def get(self):
         """
         Returns index.html
@@ -50,6 +52,7 @@ class ConfigureHandler(BaseHandler):
 
     LOGGER = logging.getLogger('ConfigureHandler')
 
+    @tornado.web.authenticated
     def get(self):
         """
         Returns the configure.html template
@@ -60,6 +63,7 @@ class ConfigureHandler(BaseHandler):
 
         self.render('configure.html', configuration=config)
 
+    @tornado.web.authenticated
     def post(self):
         """
         Saves the configuration
@@ -113,6 +117,7 @@ class ControlHandler(BaseHandler):
         self.set_pca_runtime(PCARuntime(PCARuntime.load_pca(BaseHandler.CONFIG_PATH)))
         self.get_pca_runtime().start(logging.INFO)
 
+    @tornado.web.authenticated
     def get(self):
         """
         Returns control.html
@@ -121,6 +126,7 @@ class ControlHandler(BaseHandler):
         status = self.status()
         self.render('control.html', status=status)
 
+    @tornado.web.authenticated
     def post(self):
         """
         Controls the PCA system
@@ -140,6 +146,7 @@ class FeedHandler(BaseHandler):
 
     LOGGER = logging.getLogger('FeedHandler')
 
+    #@tornado.web.authenticated
     def get(self):
         """
         Returns feed.html
@@ -208,6 +215,7 @@ class AboutHandler(BaseHandler):
 
     LOGGER = logging.getLogger('AboutHandler')
 
+    @tornado.web.authenticated
     def get(self):
         """
         Returns about.html
@@ -218,11 +226,45 @@ class AboutHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
 
+    LOGGER = logging.getLogger('LoginHandler')
+
+    def check_credential(self, passwd: str):
+        """
+        Checks the password
+        :param passwd: admin password
+        :return: True if password is correct, False otherwise
+        """
+        if passwd == 'admin':
+            return True
+        else:
+            return False
+
     def get(self):
         """
-        Returns feed.html
+        Returns login.html
         """
-        self.render('login.html')
+        LoginHandler.LOGGER.info('Handling GET message')
+        self.render('login.html', error_msg='', next=self.get_argument('next','/'))
+
+    @tornado.web.authenticated
+    def delete(self):
+        """
+        Logs out user
+        """
+        LoginHandler.LOGGER.info('Handling DELETE message')
+        self.clear_cookie('admin')
+
+    def post(self):
+        """
+        Authenticates the user
+        """
+        LoginHandler.LOGGER.info('Handling POST message')
+        if self.check_credential(self.get_argument('password')):
+            self.set_secure_cookie('admin', 'AUTH')
+            self.redirect(url=self.get_argument('next', u'/'))
+        else:
+            self.set_status(401)
+            self.render('login.html', error_msg='Wrong password!')
 
 
 def make_app():
@@ -230,6 +272,8 @@ def make_app():
     settings = {
         'template_path': 'template',
         'static_path': 'static',
+        'login_url': '/login',
+        'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes)
     }
     return tornado.web.Application([
         (r'/', MainHandler, config),
