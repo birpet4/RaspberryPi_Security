@@ -8,14 +8,15 @@
             <div class="panel-heading">
                 <div class="panel-title text-center">Credentials</div>
             </div>
-            <div class="panel-body" >
+            <div class="panel-body">
                 <div id="login_error_msg">{{ error_msg }}</div>
                 <form name="form" id="login_form" class="form-horizontal" method="POST">
+                    {% module xsrf_form_html() %}
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
                         <input type="password" class="form-control" name="password" placeholder="Password">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="login_btn">
                         <div class="col-sm-12 controls">
                             <button type="submit" class="btn btn-primary pull-right">
                                 <i class="glyphicon glyphicon-log-in"></i> Log in

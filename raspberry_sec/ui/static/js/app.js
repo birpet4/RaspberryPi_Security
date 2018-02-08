@@ -23,11 +23,13 @@ $('.dropdown-menu li a').click(function() {
 
 // Configure
 $('#cfg_form').submit(function(e){
-    e.preventDefault();
     $.ajax({
         type : 'POST',
         data: $('#cfg_form').serialize(),
         url : 'configure',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
+        },
         success : function(data){
             $('#cfg_info_alert').html(data)
             $('#cfg_info_alert').fadeTo(2000, 500).slideUp(500, function(){
@@ -35,28 +37,30 @@ $('#cfg_form').submit(function(e){
             });
         }
     });
+    return false;
 });
 
 // Control
-$('#ctrl_start').click(function(){
+function ctrlButtonSend(onStr) {
     $.ajax({
         type : 'POST',
-        data: {'on': 'true'},
+        data: {'on': onStr},
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
+        },
         url : 'control',
         success : function(data){
             location.reload();
         }
     });
+}
+$('#ctrl_start').click(
+    function(){
+        ctrlButtonSend('true');
 });
-$('#ctrl_stop').click(function(){
-    $.ajax({
-        type : 'POST',
-        data: {'on': 'false'},
-        url : 'control',
-        success : function(data){
-            location.reload();
-        }
-    });
+$('#ctrl_stop').click(
+    function(){
+        ctrlButtonSend('false');
 });
 
 // Login
@@ -65,6 +69,9 @@ $('#login_form').submit(function(){
     $.ajax({
         type : 'POST',
         data : $('#login_form').serialize(),
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
+        },
         url : 'login'
     });
 });
@@ -74,8 +81,17 @@ $('#logout_btn').click(function(){
     $.ajax({
         type : 'DELETE',
         url : 'login',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
+        },
         success : function(data){
             location.reload();
         }
     });
 });
+
+// XSRF Protection
+function getXSRFCookie() {
+    var r = document.cookie.match('\\b_xsrf=([^;]*)\\b');
+    return r ? r[1] : undefined;
+}

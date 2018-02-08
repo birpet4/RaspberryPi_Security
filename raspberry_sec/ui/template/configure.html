@@ -20,6 +20,7 @@
         </div>
         <div class="row">
             <form id="cfg_form" name="cfg_form" method="POST" action="configure">
+                {% module xsrf_form_html() %}
                 <div class="row">
                     <div class="form-group">
                         <label for="cfg_textarea">System configuration:</label>

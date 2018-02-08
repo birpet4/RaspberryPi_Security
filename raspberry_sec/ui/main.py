@@ -146,7 +146,7 @@ class FeedHandler(BaseHandler):
 
     LOGGER = logging.getLogger('FeedHandler')
 
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def get(self):
         """
         Returns feed.html
@@ -176,7 +176,12 @@ class FeedWebSocketHandler(tornado.websocket.WebSocketHandler, BaseHandler):
         On opening a websocket
         """
         FeedWebSocketHandler.LOGGER.info('Opening web-socket')
-        pass
+        auth = self.current_user
+        if auth:
+            FeedWebSocketHandler.LOGGER.info('Authenticated')
+        else:
+            FeedWebSocketHandler.LOGGER.warn('Not Authenticated')
+            self.close()
 
     def img_to_str(self, img):
         """
@@ -264,7 +269,7 @@ class LoginHandler(BaseHandler):
             self.redirect(url=self.get_argument('next', u'/'))
         else:
             self.set_status(401)
-            self.render('login.html', error_msg='Wrong password!')
+            self.render('login.html', error_msg='Wrong password!', next=self.get_argument('next','/'))
 
 
 def make_app():
@@ -273,7 +278,8 @@ def make_app():
         'template_path': 'template',
         'static_path': 'static',
         'login_url': '/login',
-        'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes)
+        'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes),
+        'xsrf_cookies': True
     }
     return tornado.web.Application([
         (r'/', MainHandler, config),

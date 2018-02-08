@@ -27,3 +27,7 @@
 #login_error_msg {
     color: red;
 }
+
+#login_btn {
+    margin-top: 10px;
+}
