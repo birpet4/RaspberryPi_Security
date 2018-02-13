@@ -302,8 +302,8 @@ def make_app():
 	return HTTPServer(
 		application,
 		ssl_options = {
-			'certfile': 'resource/ssl/ca.crt',
-			'keyfile': 'resource/ssl/ca.key',
+			'certfile': 'resource/ssl/server.crt',
+			'keyfile': 'resource/ssl/server.key',
 		}
 	)
 
