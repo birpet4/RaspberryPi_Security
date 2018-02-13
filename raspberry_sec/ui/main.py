@@ -1,4 +1,7 @@
-import tornado.ioloop, tornado.web, tornado.websocket
+from tornado.ioloop import IOLoop
+from tornado.httpserver import HTTPServer
+from tornado.web import Application, RequestHandler, authenticated
+from tornado.websocket import WebSocketHandler
 import multiprocessing as mp
 import os, sys, logging, uuid, base64, socket
 import cv2
@@ -7,7 +10,7 @@ from raspberry_sec.system.main import PCARuntime
 from raspberry_sec.interface.producer import Type
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(RequestHandler):
 
     PCA_RUNTIME = 'pca'
 
@@ -39,7 +42,7 @@ class MainHandler(BaseHandler):
 
     LOGGER = logging.getLogger('MainHandler')
 
-    @tornado.web.authenticated
+    @authenticated
     def get(self):
         """
         Returns index.html
@@ -52,7 +55,7 @@ class ConfigureHandler(BaseHandler):
 
     LOGGER = logging.getLogger('ConfigureHandler')
 
-    @tornado.web.authenticated
+    @authenticated
     def get(self):
         """
         Returns the configure.html template
@@ -63,7 +66,7 @@ class ConfigureHandler(BaseHandler):
 
         self.render('configure.html', configuration=config)
 
-    @tornado.web.authenticated
+    @authenticated
     def post(self):
         """
         Saves the configuration
@@ -117,7 +120,7 @@ class ControlHandler(BaseHandler):
         self.set_pca_runtime(PCARuntime(PCARuntime.load_pca(BaseHandler.CONFIG_PATH)))
         self.get_pca_runtime().start(logging.INFO)
 
-    @tornado.web.authenticated
+    @authenticated
     def get(self):
         """
         Returns control.html
@@ -126,7 +129,7 @@ class ControlHandler(BaseHandler):
         status = self.status()
         self.render('control.html', status=status)
 
-    @tornado.web.authenticated
+    @authenticated
     def post(self):
         """
         Controls the PCA system
@@ -146,7 +149,7 @@ class FeedHandler(BaseHandler):
 
     LOGGER = logging.getLogger('FeedHandler')
 
-    @tornado.web.authenticated
+    @authenticated
     def get(self):
         """
         Returns feed.html
@@ -161,7 +164,7 @@ class FeedHandler(BaseHandler):
         self.render('feed.html', producers=producers, ip=socket.gethostbyname(socket.gethostname()))
 
 
-class FeedWebSocketHandler(tornado.websocket.WebSocketHandler, BaseHandler):
+class FeedWebSocketHandler(WebSocketHandler, BaseHandler):
 
     LOGGER = logging.getLogger('FeedWebSocketHandler')
 
@@ -220,7 +223,7 @@ class AboutHandler(BaseHandler):
 
     LOGGER = logging.getLogger('AboutHandler')
 
-    @tornado.web.authenticated
+    @authenticated
     def get(self):
         """
         Returns about.html
@@ -251,7 +254,7 @@ class LoginHandler(BaseHandler):
         LoginHandler.LOGGER.info('Handling GET message')
         self.render('login.html', error_msg='', next=self.get_argument('next','/'))
 
-    @tornado.web.authenticated
+    @authenticated
     def delete(self):
         """
         Logs out user
@@ -273,28 +276,41 @@ class LoginHandler(BaseHandler):
 
 
 def make_app():
-    config = dict(shared_data=dict())
-    settings = {
-        'template_path': 'template',
-        'static_path': 'static',
-        'login_url': '/login',
-        'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes),
-        'xsrf_cookies': True
-    }
-    return tornado.web.Application([
-        (r'/', MainHandler, config),
-        (r'/configure', ConfigureHandler, config),
-        (r'/control', ControlHandler, config),
-        (r'/feed', FeedHandler, config),
-        (r'/feed/websocket', FeedWebSocketHandler, config),
-        (r'/about', AboutHandler, config),
-        (r'/login', LoginHandler, config)
-    ], **settings)
+	# Settings
+	config = dict(shared_data=dict())
+	settings = {
+		'template_path': 'template',
+		'static_path': 'static',
+		'login_url': '/login',
+		'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes),
+		'xsrf_cookies': True
+	}
+
+	# Endpoints
+	application = Application([
+		(r'/', MainHandler, config),
+		(r'/configure', ConfigureHandler, config),
+		(r'/control', ControlHandler, config),
+		(r'/feed', FeedHandler, config),
+		(r'/feed/websocket', FeedWebSocketHandler, config),
+		(r'/about', AboutHandler, config),
+		(r'/login', LoginHandler, config)],
+		**settings
+	)
+
+	# Connection
+	return HTTPServer(
+		application,
+		ssl_options = {
+			'certfile': 'resource/ssl/ca.crt',
+			'keyfile': 'resource/ssl/ca.key',
+		}
+	)
 
 
 if __name__ == '__main__':
     mp.set_start_method('spawn')
     logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s - %(message)s', level=logging.INFO)
-    app = make_app()
-    app.listen(59787)
-    tornado.ioloop.IOLoop.current().start()
+    server = make_app()
+    server.listen(63973)
+    IOLoop.current().start()

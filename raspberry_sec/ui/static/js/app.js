@@ -9,7 +9,7 @@ $('.dropdown-menu li a').click(function() {
     var selected = $(this).text();
     $('#feed_dropdown:first-child').html(selected + ' <span class="caret"></span>');
 
-    var ws = new WebSocket('ws://' + $('#feed_ip').text() + ':59787/feed/websocket');
+    var ws = new WebSocket('wss://' + $('#feed_ip').text() + ':63973/feed/websocket');
 
     ws.onmessage = function(content) {
        $('#feed_content').html(content.data);
