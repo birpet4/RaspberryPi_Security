@@ -6,7 +6,8 @@ import multiprocessing as mp
 import os, sys, logging, uuid, base64, socket
 import cv2
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from raspberry_sec.system.main import PCARuntime
+from raspberry_sec.system.main import PCARuntime, LogRuntime
+from raspberry_sec.system.util import ProcessReady
 from raspberry_sec.interface.producer import Type
 
 
@@ -14,10 +15,21 @@ class BaseHandler(RequestHandler):
 
     PCA_RUNTIME = 'pca'
 
+    LOG_RUNTIME = 'log'
+
     CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../..', 'config/prod/pca_system.json')
 
     def initialize(self, shared_data):
         self.shared_data = shared_data
+
+    def get_log_runtime(self):
+        """
+        :return: None or LogRuntime object
+        """
+        if self.shared_data.__contains__(BaseHandler.LOG_RUNTIME):
+            return self.shared_data[BaseHandler.LOG_RUNTIME]
+        else:
+            return None
 
     def get_pca_runtime(self):
         """
@@ -117,8 +129,13 @@ class ControlHandler(BaseHandler):
         Starts the service
         """
         ControlHandler.LOGGER.info('Starting PCA')
-        self.set_pca_runtime(PCARuntime(PCARuntime.load_pca(BaseHandler.CONFIG_PATH)))
-        self.get_pca_runtime().start(logging.INFO)
+
+        pca_runtime = PCARuntime(
+            self.get_log_runtime().log_queue,
+            PCARuntime.load_pca(BaseHandler.CONFIG_PATH))
+
+        self.set_pca_runtime(pca_runtime)
+        pca_runtime.start()
 
     @authenticated
     def get(self):
@@ -275,42 +292,57 @@ class LoginHandler(BaseHandler):
             self.render('login.html', error_msg='Wrong password!', next=self.get_argument('next','/'))
 
 
-def make_app():
-	# Settings
-	config = dict(shared_data=dict())
-	settings = {
-		'template_path': 'template',
-		'static_path': 'static',
-		'login_url': '/login',
-		'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes),
-		'xsrf_cookies': True
-	}
+def make_app(log_runtime: LogRuntime):
+    """
+    Builds the application
+    :param log_runtime: holding logging related objects
+    :return: http server
+    """
+    # Settings
+    config = dict(shared_data={BaseHandler.LOG_RUNTIME: log_runtime})
+    settings = {
+        'template_path': 'template',
+        'static_path': 'static',
+        'login_url': '/login',
+        'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes),
+        'xsrf_cookies': True
+    }
 
-	# Endpoints
-	application = Application([
-		(r'/', MainHandler, config),
-		(r'/configure', ConfigureHandler, config),
-		(r'/control', ControlHandler, config),
-		(r'/feed', FeedHandler, config),
-		(r'/feed/websocket', FeedWebSocketHandler, config),
-		(r'/about', AboutHandler, config),
-		(r'/login', LoginHandler, config)],
-		**settings
-	)
+    # Endpoints
+    application = Application([
+        (r'/', MainHandler, config),
+        (r'/configure', ConfigureHandler, config),
+        (r'/control', ControlHandler, config),
+        (r'/feed', FeedHandler, config),
+        (r'/feed/websocket', FeedWebSocketHandler, config),
+        (r'/about', AboutHandler, config),
+        (r'/login', LoginHandler, config)],
+        **settings
+    )
 
-	# Connection
-	return HTTPServer(
-		application,
-		ssl_options = {
-			'certfile': 'resource/ssl/server.crt',
-			'keyfile': 'resource/ssl/server.key',
-		}
-	)
+    # Connection
+    return HTTPServer(
+        application,
+        ssl_options = {
+            'certfile': 'resource/ssl/server.crt',
+            'keyfile': 'resource/ssl/server.key',
+        }
+    )
 
 
 if __name__ == '__main__':
     mp.set_start_method('spawn')
-    logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s - %(message)s', level=logging.INFO)
-    server = make_app()
+
+    # Start logging process
+    log_runtime = LogRuntime(level=logging.INFO)
+    log_runtime.start()
+
+    # Setup logging for current process
+    ProcessReady.setup_logging(log_runtime.log_queue)
+
+    server = make_app(log_runtime)
     server.listen(63973)
     IOLoop.current().start()
+
+    # Stop logging process
+    log_runtime.stop()
