@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from raspberry_sec.system.main import PCARuntime, LogRuntime
 from raspberry_sec.system.util import ProcessReady
 from raspberry_sec.interface.producer import Type
+import raspberry_sec.ui.util as secutil
 
 
 class BaseHandler(RequestHandler):
@@ -18,6 +19,8 @@ class BaseHandler(RequestHandler):
     LOG_RUNTIME = 'log'
 
     CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../..', 'config/prod/pca_system.json')
+
+    PASSWD_PATH = os.path.join(os.path.dirname(__file__), '../..', 'raspberry_sec/ui/resource/passwd/passwd')
 
     def initialize(self, shared_data):
         self.shared_data = shared_data
@@ -259,10 +262,11 @@ class LoginHandler(BaseHandler):
         :param passwd: admin password
         :return: True if password is correct, False otherwise
         """
-        if passwd == 'admin':
-            return True
-        else:
-            return False
+        try:
+            LoginHandler.LOGGER.info('Checking credentials')
+            return secutil.validate(passwd, BaseHandler.PASSWD_PATH)
+        except Exception as e:
+            LoginHandler.LOGGER.error(e)
 
     def get(self):
         """

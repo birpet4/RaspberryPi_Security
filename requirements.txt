@@ -2,3 +2,4 @@ opencv-python == 3.3.0.10
 opencv-contrib-python == 3.3.0.10
 pytest == 3.2.2
 tornado == 4.5.2
+scrypt == 0.8.6
