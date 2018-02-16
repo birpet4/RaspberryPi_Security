@@ -24,8 +24,9 @@ fi
 
 
 # ---------------------------------------------
+# Finds every test_*.py files
 echo '=== Running unit-tests'
-pytest .
+pytest -v .
 
 # if no tests were found, don't fail
 if [ 5 -eq $? ]

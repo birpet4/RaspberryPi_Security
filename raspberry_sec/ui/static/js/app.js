@@ -75,6 +75,10 @@ $('#login_form').submit(function(){
         url : 'login'
     });
 });
+$('#login_pwd').on('keypress', function(e) {
+    if (e.which == 32)
+        return false;
+});
 
 // Logout
 $('#logout_btn').click(function(){

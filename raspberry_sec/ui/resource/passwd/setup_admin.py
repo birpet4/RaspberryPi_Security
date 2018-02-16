@@ -25,7 +25,7 @@ def create(salt_len: int, hash_len: int):
 	:param salt_len: salt length
 	:param hash_len: hash length
 	"""
-	passwd = base64.b64encode(enter_passwd().encode())
+	passwd = enter_passwd()
 	salt = base64.b64encode(os.urandom(salt_len)).decode()
 	hash_line = salt + '$' + secutil.encode_passwd(passwd, salt, hash_len) + '$' + str(hash_len)
 
