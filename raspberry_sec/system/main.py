@@ -30,8 +30,8 @@ class PCARuntime:
 		:param config_path: file
 		:return: PCASystem object
 		"""
-		abs_path = os.path.join(os.path.dirname(__file__), '../..', config_path)
-		return PCASystemJSONDecoder.load_from_config(abs_path)
+		print(config_path)
+		return PCASystemJSONDecoder.load_from_config(config_path)
 
 	def start(self):
 		"""
@@ -97,7 +97,7 @@ def run_pcasystem(env: str, log_queue: Queue):
 	:param log_queue: logging queue to use
 	"""
 	# PCA
-	config_file = os.path.join('config', env, 'pca_system.json')
+	config_file = os.path.abspath(os.path.join('../../config', env, 'pca_system.json'))
 	pca_runtime = PCARuntime(log_queue, PCARuntime.load_pca(config_file))
 	pca_runtime.start()
 

@@ -18,9 +18,16 @@ class BaseHandler(RequestHandler):
 
     LOG_RUNTIME = 'log'
 
-    CONFIG_PATH = os.path.join(os.path.dirname(__file__), '../..', 'config/prod/pca_system.json')
+    @staticmethod
+    def get_abs_path(file: str):
+        """
+        :return: the absolute path to file
+        """
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), file))
 
-    PASSWD_PATH = os.path.join(os.path.dirname(__file__), '../..', 'raspberry_sec/ui/resource/passwd/passwd')
+    CONFIG_PATH = get_abs_path.__func__('../../config/prod/pca_system.json')
+
+    PASSWD_PATH = get_abs_path.__func__('resource/passwd/passwd')
 
     def initialize(self, shared_data):
         self.shared_data = shared_data
