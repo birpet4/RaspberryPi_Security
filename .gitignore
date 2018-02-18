@@ -1,4 +1,5 @@
 .vscode
+.cache
 **/*.pyc
 **/.idea
 **/.DS_Store

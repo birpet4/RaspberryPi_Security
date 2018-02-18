@@ -37,13 +37,18 @@ class PCASystem(ProcessReady):
 		"""
 		Validates the system by checking its components.
 		Raises exception if something is wrong.
+		:return True if the system seems to be good, False otherwise
 		"""
 		if not self.stream_controller:
-			PCASystem.LOGGER.error('StreamController was not set')
-			raise
+			msg = 'StreamController was not set'
+			PCASystem.LOGGER.error(msg)
+			raise AttributeError(msg)
 
 		if not self.streams:
 			PCASystem.LOGGER.warning('There are no streams configured')
+			return False
+
+		return True
 
 	def run(self, context: ProcessContext):
 		"""
@@ -207,12 +212,6 @@ class PCALoader(Loader):
 	module_package = 'raspberry_sec.module'
 	allowed_modules = {'action', 'consumer', 'producer'}
 	loaded_classes = {Action: {}, Consumer: {}, Producer: {}}
-
-	def __init__(self):
-		"""
-		Constructor
-		"""
-		self.load()
 
 	@staticmethod
 	def filter_for_allowed_modules(modules: list):
@@ -388,6 +387,7 @@ class PCASystemJSONDecoder(JSONDecoder):
 		:param kwargs:
 		"""
 		pca_loader = PCALoader()
+		pca_loader.load()
 		self.loaded_producers = pca_loader.get_producers()
 		self.loaded_consumers = pca_loader.get_consumers()
 		self.loaded_actions = pca_loader.get_actions()

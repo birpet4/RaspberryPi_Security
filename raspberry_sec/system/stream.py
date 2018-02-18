@@ -48,16 +48,21 @@ class Stream(ProcessReady):
 		"""
 		This method validates whether the stream is properly configured.
 		Raises exception if not.
+		:return True if it seems to be alright
 		"""
 		if self.producer is None:
-			Stream.LOGGER.error('No producer set for stream: ' + self.name)
-			raise
+			msg = 'No producer set for stream: ' + self.name
+			Stream.LOGGER.error(msg)
+			raise AttributeError(msg)
 
 		prod_type = self.producer.get_type()
 		for consumer in self.consumers:
 			if consumer.get_type() is not prod_type:
-				Stream.LOGGER.error('Wrong consumer type in stream: ' + self.name)
-				raise
+				msg = 'Wrong consumer type in stream: ' + self.name
+				Stream.LOGGER.error(msg)
+				raise AttributeError(msg)
+
+		return True
 
 	def run(self, context: ProcessContext):
 		"""

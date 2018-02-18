@@ -266,7 +266,7 @@ class LoginHandler(BaseHandler):
             LoginHandler.LOGGER.info('Checking credentials')
             return secutil.validate(passwd, BaseHandler.PASSWD_PATH)
         except Exception as e:
-            LoginHandler.LOGGER.error(e)
+            LoginHandler.LOGGER.error(e.__str__())
 
     def get(self):
         """
