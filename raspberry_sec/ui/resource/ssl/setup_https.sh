@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# README:
+#
+# Run this script as root !
+#
+
 # Clean-up
 chmod 700 root* server* v3*
 rm root* server* v3*
@@ -35,4 +40,4 @@ openssl req -new -sha256 -nodes -out server.csr -newkey rsa:2048 -keyout server.
 openssl x509 -req -in server.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out server.crt -days 500 -sha256 -extfile v3.ext
 
 # Read-only
-chmod 400 root* server* v3*
+chmod 444 root* server* v3*
