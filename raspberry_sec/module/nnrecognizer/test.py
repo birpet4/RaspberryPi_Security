@@ -45,23 +45,23 @@ class Context:
 		:param dirs: list of directories containing the classes (e.g. neg, pos)
 		:return: newly created object
 		"""
-		self.num_of_classes = -1
+		self.num_of_classes = 0
 		faces = list()
 		classes = list()
 
 		for dir in dirs:
-			self.num_of_classes += 1
-
 			# Read from dir
 			dir = os.sep.join([Context.DATA_ROOT, dir])
 			img_list = [value for _, value in Context.get_images(dir).items()]
 			label_list = [self.num_of_classes for _ in img_list]
 
 			# Update
+			self.num_of_classes += 1
 			faces += img_list
 			classes += label_list
 
-		# NumPy conversion
+		# NumPy + size + color conversion
+		faces = [Context.convert_img(img, self.img_size) for img in faces]
 		faces = np.asarray(faces)
 		classes = np.asarray(classes)
 
@@ -73,10 +73,10 @@ class Context:
 			faces, classes, test_size=self.test_split, random_state=561)
 
 		# To one-hot
-		self.trd = train_faces
-		self.td = test_faces
-		self.trl = to_categorical(train_classes)
-		self.tl = to_categorical(test_classes)
+		self.test_label = to_categorical(test_classes)
+		self.train_label = to_categorical(train_classes)
+		self.test_data = test_faces
+		self.train_data = train_faces
 
 	def pre_process_data(self, detect=False, update=False):
 		"""
@@ -119,6 +119,17 @@ class Context:
 			print('Error: ' + str(e))
 		finally:
 			cv2.destroyAllWindows()
+
+	@staticmethod
+	def convert_img(img: np.ndarray, size: int, color: int=cv2.COLOR_BGR2GRAY):
+		"""
+		Converts the image
+		:param img: to be converted
+		:param size: (X, X)
+		:param color: color space code
+		:return: image after conversion
+		"""
+		return cv2.resize(cv2.cvtColor(img, color), (size, size))
 
 	@staticmethod
 	def get_detector_parameters():
