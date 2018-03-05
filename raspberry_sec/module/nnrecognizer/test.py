@@ -54,6 +54,7 @@ class Context:
 			dir = os.sep.join([Context.DATA_ROOT, dir])
 			img_list = [value for _, value in Context.get_images(dir).items()]
 			label_list = [self.num_of_classes for _ in img_list]
+			print('Class: ' + str(self.num_of_classes) + ' --> ' + str(dir))
 
 			# Update
 			self.num_of_classes += 1
@@ -175,23 +176,23 @@ class NeuralNetwork:
 		size = self.ctx.img_size
 
 		m = Sequential()
-		m.add(Conv2D(128, kernel_size=(7, 7), activation='linear', input_shape=(size, size, 1), padding='same'))
-		m.add(LeakyReLU(alpha=0.1))
-		m.add(MaxPooling2D((2, 2), padding='same'))
-		m.add(Dropout(0.25))
-		m.add(Conv2D(256, (3, 3), activation='linear', padding='same'))
+		m.add(Conv2D(filters=128, kernel_size=(3, 3), activation='linear', input_shape=(size, size, 1), padding='same'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-		m.add(Dropout(0.25))
-		m.add(Conv2D(512, (3, 3), activation='linear', padding='same'))
+		m.add(Dropout(rate=0.2))
+		m.add(Conv2D(filters=256, kernel_size=(3, 3), activation='linear', padding='same'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-		m.add(Dropout(0.25))
+		m.add(Dropout(rate=0.2))
+		m.add(Conv2D(filters=256, kernel_size=(3, 3), activation='linear', padding='same'))
+		m.add(LeakyReLU(alpha=0.1))
+		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+		m.add(Dropout(rate=0.2))
 		m.add(Flatten())
-		m.add(Dense(256, activation='linear'))
+		m.add(Dense(units=256, activation='linear'))
 		m.add(LeakyReLU(alpha=0.1))
-		m.add(Dropout(0.25))
-		m.add(Dense(num_classes, activation='softmax'))
+		m.add(Dropout(rate=0.2))
+		m.add(Dense(units=num_classes, activation='softmax'))
 
 		# Compile
 		m.compile(loss=categorical_crossentropy, optimizer=Adam(), metrics=['accuracy'])
@@ -225,10 +226,14 @@ class NeuralNetwork:
 			verbose=1,
 			validation_data=(self.ctx.test_data, self.ctx.test_label))
 
-		# Test
+		# Test model
 		test_eval = self.model.evaluate(self.ctx.test_data, self.ctx.test_label, verbose=1)
 		print('Test loss:', test_eval[0])
 		print('Test accuracy:', test_eval[1])
+
+		test_eval = self.model.evaluate(self.ctx.train_data, self.ctx.train_label, verbose=1)
+		print('Train loss:', test_eval[0])
+		print('Train accuracy:', test_eval[1])
 
 		# Saves the model
 		self.save()
@@ -283,13 +288,14 @@ def test_network(nn: NeuralNetwork):
 
 
 if __name__ == '__main__':
-	ctx = Context()
+	ctx = Context(img_size=128, batch_size=64, epochs=10)
 	ctx.load_data(['neg', 'pos'])
+
 	#ctx.pre_process_data()
 
 	nn = NeuralNetwork(ctx)
 	nn.initialize()
 	nn.train_model()
-	#nn.load()
 
+	#nn.load()
 	#test_network(nn)
