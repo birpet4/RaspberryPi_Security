@@ -1,14 +1,13 @@
 import os, sys
 import cv2
 import numpy as np
-from keras.models import Sequential, Model, load_model
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.datasets import fashion_mnist
 from keras.utils import to_categorical
 from keras.optimizers import Adam
-from keras.losses import categorical_crossentropy
+import keras.losses as loss
 from sklearn.model_selection import train_test_split
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 
@@ -24,7 +23,9 @@ class Context:
 				test_split: float=0.25,
 				model_path: str='resources/model.h5py',
 				batch_size: int=1,
-				epochs: int=10):
+				epochs: int=10,
+				lr: float=0.001,
+				loss_func: str=loss.mean_squared_error):
 		# Data
 		self.train_data = None
 		self.train_label = None
@@ -36,8 +37,10 @@ class Context:
 		self.img_size = img_size
 		self.test_split = test_split
 		self.model_path = model_path
-		self.batch_size =  batch_size
+		self.batch_size = batch_size
 		self.epochs = epochs
+		self.loss_func = loss_func
+		self.lr = lr
 
 	def load_data(self, dirs: list):
 		"""
@@ -67,7 +70,7 @@ class Context:
 		classes = np.asarray(classes)
 
 		# Reshape -> convert -> normalize (0-1)
-		faces = faces.reshape(-1, self.img_size, self.img_size, 1).astype('float32') / 255
+		faces = faces.reshape(-1, self.img_size, self.img_size, 1).astype('float64') / 255
 
 		# Train/Test split
 		(train_faces, test_faces, train_classes, test_classes) = train_test_split(
@@ -195,7 +198,7 @@ class NeuralNetwork:
 		m.add(Dense(units=num_classes, activation='softmax'))
 
 		# Compile
-		m.compile(loss=categorical_crossentropy, optimizer=Adam(), metrics=['accuracy'])
+		m.compile(loss=ctx.loss_func, optimizer=Adam(ctx.lr), metrics=['accuracy'])
 		m.summary()
 		self.model = m
 
@@ -226,17 +229,21 @@ class NeuralNetwork:
 			verbose=1,
 			validation_data=(self.ctx.test_data, self.ctx.test_label))
 
+		# Saves the model
+		self.save()
+
+	def evaluate_model(self):
+		"""
+		Evaluates the model
+		"""
 		# Test model
-		test_eval = self.model.evaluate(self.ctx.test_data, self.ctx.test_label, verbose=1)
+		test_eval = self.model.evaluate(self.ctx.test_data, self.ctx.test_label, batch_size=1, verbose=1)
 		print('Test loss:', test_eval[0])
 		print('Test accuracy:', test_eval[1])
 
-		test_eval = self.model.evaluate(self.ctx.train_data, self.ctx.train_label, verbose=1)
+		test_eval = self.model.evaluate(self.ctx.train_data, self.ctx.train_label, batch_size=1, verbose=1)
 		print('Train loss:', test_eval[0])
 		print('Train accuracy:', test_eval[1])
-
-		# Saves the model
-		self.save()
 
 	def predict(self, img: np.ndarray):
 		"""
@@ -288,9 +295,13 @@ def test_network(nn: NeuralNetwork):
 
 
 if __name__ == '__main__':
-	ctx = Context(img_size=128, batch_size=64, epochs=10)
+	ctx = Context(
+		img_size=128,
+		batch_size=64,
+		epochs=5,
+		lr=0.0001,
+		loss_func=loss.mean_absolute_error)
 	ctx.load_data(['neg', 'pos'])
-
 	#ctx.pre_process_data()
 
 	nn = NeuralNetwork(ctx)
@@ -298,4 +309,5 @@ if __name__ == '__main__':
 	nn.train_model()
 
 	#nn.load()
+	nn.evaluate_model()
 	#test_network(nn)
