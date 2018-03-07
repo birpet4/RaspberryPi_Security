@@ -177,24 +177,33 @@ class NeuralNetwork:
 		"""
 		num_classes = self.ctx.num_of_classes
 		size = self.ctx.img_size
-
 		m = Sequential()
+
 		m.add(Conv2D(filters=128, kernel_size=(3, 3), activation='linear', input_shape=(size, size, 1), padding='same'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-		m.add(Dropout(rate=0.2))
+		m.add(Dropout(rate=0.25))
+
 		m.add(Conv2D(filters=256, kernel_size=(3, 3), activation='linear', padding='same'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-		m.add(Dropout(rate=0.2))
+		m.add(Dropout(rate=0.25))
+
 		m.add(Conv2D(filters=256, kernel_size=(3, 3), activation='linear', padding='same'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-		m.add(Dropout(rate=0.2))
+		m.add(Dropout(rate=0.25))
+
+		m.add(Conv2D(filters=512, kernel_size=(3, 3), activation='linear', padding='same'))
+		m.add(LeakyReLU(alpha=0.1))
+		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+		m.add(Dropout(rate=0.25))
+
 		m.add(Flatten())
 		m.add(Dense(units=256, activation='linear'))
 		m.add(LeakyReLU(alpha=0.1))
-		m.add(Dropout(rate=0.2))
+		m.add(Dropout(rate=0.25))
+
 		m.add(Dense(units=num_classes, activation='softmax'))
 
 		# Compile
@@ -298,16 +307,16 @@ if __name__ == '__main__':
 	ctx = Context(
 		img_size=128,
 		batch_size=64,
-		epochs=5,
+		epochs=10,
 		lr=0.0001,
 		loss_func=loss.mean_absolute_error)
-	ctx.load_data(['neg', 'pos'])
+	#ctx.load_data(['neg', 'pos'])
 	#ctx.pre_process_data()
 
 	nn = NeuralNetwork(ctx)
-	nn.initialize()
-	nn.train_model()
+	#nn.initialize()
+	#nn.train_model()
+	#nn.evaluate_model()
 
-	#nn.load()
-	nn.evaluate_model()
-	#test_network(nn)
+	nn.load()
+	test_network(nn)

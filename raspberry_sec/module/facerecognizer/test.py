@@ -161,11 +161,10 @@ def resize_image(_img: np.ndarray, _size: int):
 	return cv2.resize(_img, (_size, _size))
 
 
-def produce_training_data(who: str):
+def produce_training_data(who: str, timeout: int=2000):
 	output_dir = os.sep.join(['training_data', who])
 	output = os.sep.join([output_dir, who])
 	os.mkdir(output_dir)
-	timeout = 2000
 
 	context = ConsumerContext(None, False)
 	detector_consumer = FacedetectorConsumer(set_detector_parameters())
@@ -189,6 +188,6 @@ def produce_training_data(who: str):
 
 
 if __name__ == '__main__':
-	# produce_training_data('mate_c')
+	# produce_training_data('mate_c', 500)
 	train()
 	integration_test()
