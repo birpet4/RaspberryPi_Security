@@ -1,6 +1,7 @@
 import os, sys
 import cv2
 import numpy as np
+import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
@@ -179,7 +180,7 @@ class NeuralNetwork:
 		size = self.ctx.img_size
 		m = Sequential()
 
-		m.add(Conv2D(filters=128, kernel_size=(3, 3), activation='linear', input_shape=(size, size, 1), padding='same'))
+		m.add(Conv2D(filters=128, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(size, size, 1)))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
 		m.add(Dropout(rate=0.25))
@@ -190,17 +191,12 @@ class NeuralNetwork:
 		m.add(Dropout(rate=0.25))
 
 		m.add(Conv2D(filters=256, kernel_size=(3, 3), activation='linear', padding='same'))
-		m.add(LeakyReLU(alpha=0.1))
-		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-		m.add(Dropout(rate=0.25))
-
-		m.add(Conv2D(filters=512, kernel_size=(3, 3), activation='linear', padding='same'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
 		m.add(Dropout(rate=0.25))
 
 		m.add(Flatten())
-		m.add(Dense(units=256, activation='linear'))
+		m.add(Dense(units=128, activation='linear'))
 		m.add(LeakyReLU(alpha=0.1))
 		m.add(Dropout(rate=0.25))
 
@@ -316,7 +312,7 @@ if __name__ == '__main__':
 	nn = NeuralNetwork(ctx)
 	#nn.initialize()
 	#nn.train_model()
+	nn.load()
 	#nn.evaluate_model()
 
-	nn.load()
 	test_network(nn)
