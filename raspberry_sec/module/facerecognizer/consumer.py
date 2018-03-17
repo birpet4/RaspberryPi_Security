@@ -26,10 +26,10 @@ class FacerecognizerConsumer(Consumer):
 		return 'FacerecognizerConsumer'
 
 	@staticmethod
-	def get_full_path(file: str):
+	def get_path(file: str):
 		"""
 		:param file: e.g. Cascade.xml
-		:return: the absolute path for the file
+		:return: the path for the file
 		"""
 		import os
 		return os.sep.join([os.path.dirname(__file__), file])
@@ -56,12 +56,12 @@ class FacerecognizerConsumer(Consumer):
 			grid_y=self.parameters['lbph_height'],
 			threshold=self.parameters['lbph_threshold'])
 
-		self.eigen_recognizer.read(FacerecognizerConsumer.get_full_path(self.parameters['eigen_model']))
-		self.fisher_recognizer.read(FacerecognizerConsumer.get_full_path(self.parameters['fisher_model']))
-		self.lbph_recognizer.read(FacerecognizerConsumer.get_full_path(self.parameters['lbph_model']))
+		self.eigen_recognizer.read(FacerecognizerConsumer.get_path(self.parameters['eigen_model']))
+		self.fisher_recognizer.read(FacerecognizerConsumer.get_path(self.parameters['fisher_model']))
+		self.lbph_recognizer.read(FacerecognizerConsumer.get_path(self.parameters['lbph_model']))
 
 		try:
-			label_map_path = FacerecognizerConsumer.get_full_path(self.parameters['label_map'])
+			label_map_path = FacerecognizerConsumer.get_path(self.parameters['label_map'])
 			with open(label_map_path) as label_file:
 				names_with_labels = json.load(label_file)
 				self.label_to_name = {value: key for key, value in names_with_labels.items()}

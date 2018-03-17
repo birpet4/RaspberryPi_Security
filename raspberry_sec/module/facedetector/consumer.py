@@ -23,10 +23,10 @@ class FacedetectorConsumer(Consumer):
 		return 'FacedetectorConsumer'
 
 	@staticmethod
-	def get_full_path(file: str):
+	def get_path(file: str):
 		"""
 		:param file: e.g. Cascade.xml
-		:return: the absolute path for the file
+		:return: the path for the file
 		"""
 		import os
 		return os.sep.join([os.path.dirname(__file__), file])
@@ -37,7 +37,7 @@ class FacedetectorConsumer(Consumer):
 		"""
 		import cv2
 		FacedetectorConsumer.LOGGER.info('Initializing component')
-		self.face_cascade = cv2.CascadeClassifier(FacedetectorConsumer.get_full_path(self.parameters['cascade_file']))
+		self.face_cascade = cv2.CascadeClassifier(FacedetectorConsumer.get_path(self.parameters['cascade_file']))
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):

@@ -80,10 +80,25 @@
                     }
                 },
                 {
-                    "__type__": "NnrecognizerConsumer",
+                    "__type__": "FacerecognizerConsumer",
                     "parameters": {
-                        "model": "resources/model.h5py",
-                        "size": 128
+                        "eigen_components": 7,
+                        "eigen_enabled": true,
+                        "eigen_model": "resources/eigen.yml",
+                        "eigen_threshold": 2000.0,
+                        "fisher_components": 7,
+                        "fisher_enabled": true,
+                        "fisher_model": "resources/fisher.yml",
+                        "fisher_threshold": 500.0,
+                        "label_map": "resources/labels.json",
+                        "lbph_enabled": true,
+                        "lbph_height": 7,
+                        "lbph_model": "resources/lbph.yml",
+                        "lbph_neighbors": 8,
+                        "lbph_radius": 5,
+                        "lbph_threshold": 80.0,
+                        "lbph_width": 7,
+                        "size": 100
                     }
                 }
             ],

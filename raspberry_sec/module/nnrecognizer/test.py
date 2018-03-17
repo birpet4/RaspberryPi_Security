@@ -1,7 +1,6 @@
 import os, sys
 import cv2
 import numpy as np
-import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
@@ -11,6 +10,8 @@ from keras.optimizers import Adam
 import keras.losses as loss
 from sklearn.model_selection import train_test_split
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer, ConsumerContext
+from raspberry_sec.module.nnrecognizer.consumer import NnrecognizerConsumer
 
 
 class Context:
@@ -146,6 +147,13 @@ class Context:
 		return parameters
 
 	@staticmethod
+	def get_recognizer_parameters():
+		parameters = dict()
+		parameters['model'] = 'resources/model.h5py'
+		parameters['size'] = 128
+		return parameters
+
+	@staticmethod
 	def get_images(dir: str):
 		"""
 		Reads and returns images from a directory (recursively)
@@ -213,12 +221,6 @@ class NeuralNetwork:
 		"""
 		self.model.save(self.ctx.model_path)
 
-	def load(self):
-		"""
-		Loads the model from file and stores it
-		"""
-		self.model = load_model(self.ctx.model_path)
-
 	def train_model(self):
 		"""
 		Trains and tests the Neural Network
@@ -250,32 +252,10 @@ class NeuralNetwork:
 		print('Train loss:', test_eval[0])
 		print('Train accuracy:', test_eval[1])
 
-	def predict(self, img: np.ndarray):
-		"""
-		Uses the trained neural network model for prediction
-		:param img: to be predicted
-		:return predicted classes
-		"""
-		# Resize
-		size = self.ctx.img_size
-		img = cv2.resize(img, (size, size))
 
-		# Conver if not 3D (not gray)
-		if len(img.shape) == 3:
-			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-		# Normalize
-		img = np.asarray([img]).reshape(-1, size, size, 1).astype('float32') / 255
-
-		# Predict
-		predicted_classes = self.model.predict(img)
-		predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
-		return predicted_classes[0]
-
-
-def test_network(nn: NeuralNetwork):
+def test():
 	# Given
-	from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer, ConsumerContext
+	recognizer_consumer = NnrecognizerConsumer(Context.get_recognizer_parameters())
 	detector_consumer = FacedetectorConsumer(Context.get_detector_parameters())
 	context = ConsumerContext(None, False)
 	cap = cv2.VideoCapture(0)
@@ -291,8 +271,9 @@ def test_network(nn: NeuralNetwork):
 				face = context.data
 			# Recognition
 			if context.alert:
-				prediction = nn.predict(face)
-				cv2.putText(face, str(prediction), (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+				context = recognizer_consumer.run(context)
+				data = str(context.alert_data)
+				cv2.putText(face, data, (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
 				cv2.imshow('Testing recognition model', face)
 	finally:
 		cap.release()
@@ -303,16 +284,15 @@ if __name__ == '__main__':
 	ctx = Context(
 		img_size=128,
 		batch_size=64,
-		epochs=10,
-		lr=0.0001,
+		epochs=15,
+		lr=0.00005,
 		loss_func=loss.mean_absolute_error)
 	#ctx.load_data(['neg', 'pos'])
 	#ctx.pre_process_data()
 
-	nn = NeuralNetwork(ctx)
+	#nn = NeuralNetwork(ctx)
 	#nn.initialize()
 	#nn.train_model()
-	nn.load()
 	#nn.evaluate_model()
 
-	test_network(nn)
+	test()
