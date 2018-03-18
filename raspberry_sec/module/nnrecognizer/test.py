@@ -1,4 +1,5 @@
 import os, sys
+import logging
 import cv2
 import numpy as np
 from keras.models import Sequential, load_model
@@ -12,6 +13,9 @@ from sklearn.model_selection import train_test_split
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer, ConsumerContext
 from raspberry_sec.module.nnrecognizer.consumer import NnrecognizerConsumer
+
+
+logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s - %(message)s', level=logging.DEBUG)
 
 
 class Context:

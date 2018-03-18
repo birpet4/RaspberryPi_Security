@@ -11,7 +11,7 @@ from raspberry_sec.module.facerecognizer.consumer import FacerecognizerConsumer
 from raspberry_sec.interface.consumer import ConsumerContext
 
 
-logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s - %(message)s', level=logging.DEBUG)
 
 
 def set_parameters():
