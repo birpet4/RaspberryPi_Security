@@ -45,8 +45,8 @@ class NnrecognizerConsumer(Consumer):
 			model_path = NnrecognizerConsumer.get_path(self.parameters['model'])
 			self.model = load_model(model_path)
 			NnrecognizerConsumer.LOGGER.info('Loaded network model')
-		except Exception:
-			NnrecognizerConsumer.LOGGER.error('Cannot load model')
+		except Exception as e:
+			NnrecognizerConsumer.LOGGER.error('Cannot load model: ' + str(e))
 
 		self.initialized = True
 
