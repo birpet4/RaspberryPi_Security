@@ -13,7 +13,7 @@
                 "user": "mt.raspberry.pi"
             }
         },
-        "query": "@STREAM1@ and not @STREAM2@"
+        "query": "@STREAM1@ and @STREAM2@"
     },
     "streams": [
         {

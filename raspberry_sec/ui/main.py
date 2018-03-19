@@ -3,7 +3,7 @@ from tornado.httpserver import HTTPServer
 from tornado.web import Application, RequestHandler, authenticated
 from tornado.websocket import WebSocketHandler
 import multiprocessing as mp
-import os, sys, logging, uuid, base64, socket
+import os, sys, logging, uuid, base64
 import cv2
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from raspberry_sec.system.main import PCARuntime, LogRuntime
@@ -188,7 +188,7 @@ class FeedHandler(BaseHandler):
         else:
             producers = []
 
-        self.render('feed.html', producers=producers, ip=socket.gethostbyname(socket.gethostname()))
+        self.render('feed.html', producers=producers, ip=os.environ['PCA_IP'])
 
 
 class FeedWebSocketHandler(WebSocketHandler, BaseHandler):
