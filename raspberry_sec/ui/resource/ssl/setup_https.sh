@@ -4,6 +4,8 @@
 #
 # Run this script as root !
 #
+echo "The IP address (domain name) I am creating the certificate for?"
+read IP
 
 # Clean-up
 chmod 700 root* server* v3*
@@ -26,14 +28,14 @@ echo "L=Budapest" >> server.csr.config
 echo "O=PCA Corp." >> server.csr.config
 echo "OU=HomeSec" >> server.csr.config
 echo "emailAddress=info@pca.com" >> server.csr.config
-echo "CN=localhost" >> server.csr.config
+echo "CN=${IP}" >> server.csr.config
 
 echo "authorityKeyIdentifier=keyid,issuer" > v3.ext
 echo "basicConstraints=CA:FALSE" >> v3.ext
 echo "keyUsage=digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment" >> v3.ext
 echo "subjectAltName=@alt_names" >> v3.ext
 echo "[alt_names]" >> v3.ext
-echo "DNS.1=localhost" >> v3.ext
+echo "DNS.1=${IP}" >> v3.ext
 
 # Server Cert
 openssl req -new -sha256 -nodes -out server.csr -newkey rsa:2048 -keyout server.key -config server.csr.config
