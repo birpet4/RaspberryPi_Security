@@ -56,18 +56,17 @@ class NnrecognizerConsumer(Consumer):
 
 		# the data is expected to be the detected face
 		face = context.data
+		context.alert = False
 
 		if face is not None:
 			NnrecognizerConsumer.LOGGER.info('Running face recognition...')
 			if self.recognize(face):
-				context.alert = False
+				context.alert = True
 				context.alert_data = 'Positive recognition'
 			else:
-				context.alert = True
 				context.alert_data = 'Negative recognition'
 			NnrecognizerConsumer.LOGGER.info(context.alert_data)
 		else:
-			context.alert = False
 			NnrecognizerConsumer.LOGGER.warning('Face was not provided (is None)')
 
 		return context
