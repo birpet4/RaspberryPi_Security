@@ -1,5 +1,5 @@
 import logging
-import os
+import os, base64
 import cv2, numpy as np
 from keras.models import load_model
 from raspberry_sec.interface.producer import Type
@@ -36,6 +36,19 @@ class NnrecognizerConsumer(Consumer):
 		"""
 		return os.sep.join([os.path.dirname(__file__), file])
 
+	@staticmethod
+	def img_to_str(img):
+		"""
+		Converts the numpy ndarray into a HTML compatible png src
+		:param img: numpy array
+		:return: HTML compatible img src
+		"""
+		resized = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
+		png_encoded = cv2.imencode('.png', resized)[1]
+		b64_encoded = base64.b64encode(png_encoded.tostring())
+		final_format = b64_encoded.decode('utf-8')
+		return '<img class="img-responsive center-block" src="data:image/png;base64,' + final_format + '">'
+
 	def initialize(self):
 		"""
 		Initializes component
@@ -56,18 +69,20 @@ class NnrecognizerConsumer(Consumer):
 
 		# the data is expected to be the detected face
 		face = context.data
-		context.alert = False
+		context.alert = True
 
 		if face is not None:
 			NnrecognizerConsumer.LOGGER.info('Running face recognition...')
 			if self.recognize(face):
-				context.alert = True
+				context.alert = False
 				context.alert_data = 'Positive recognition'
+				NnrecognizerConsumer.LOGGER.info(context.alert_data)
 			else:
-				context.alert_data = 'Negative recognition'
-			NnrecognizerConsumer.LOGGER.info(context.alert_data)
+				context.alert_data = NnrecognizerConsumer.img_to_str(face)
+				NnrecognizerConsumer.LOGGER.info('Negative recognition')
 		else:
 			NnrecognizerConsumer.LOGGER.warning('Face was not provided (is None)')
+			context.alert_data = 'No face provided'
 
 		return context
 

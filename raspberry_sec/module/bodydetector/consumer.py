@@ -1,5 +1,6 @@
 import logging
 import time
+import cv2
 from raspberry_sec.interface.producer import Type
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
@@ -26,7 +27,6 @@ class BodydetectorConsumer(Consumer):
 		"""
 		Initializes component
 		"""
-		import cv2
 		BodydetectorConsumer.LOGGER.info('Initializing component')
 		self.hog = cv2.HOGDescriptor()
 		self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -34,7 +34,6 @@ class BodydetectorConsumer(Consumer):
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):
-		import cv2
 		if not self.initialized:
 			self.initialize()
 

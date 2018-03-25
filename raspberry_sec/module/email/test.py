@@ -1,6 +1,5 @@
 import sys
 import os
-sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.email.action import EmailAction
 from raspberry_sec.interface.action import ActionMessage

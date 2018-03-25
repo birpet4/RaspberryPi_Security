@@ -4,7 +4,6 @@ import sys
 import numpy as np
 import json
 import logging
-sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.facedetector.consumer import FacedetectorConsumer
 from raspberry_sec.module.facerecognizer.consumer import FacerecognizerConsumer
@@ -74,7 +73,7 @@ def integration_test():
 
 def train():
 	parameters = set_parameters()
-	labels_with_images, names_with_labels = get_images_and_labels('training_data', parameters['size'])
+	labels_with_images, names_with_labels = get_images_and_labels('resources/train', parameters['size'])
 
 	# Eigen
 	path = parameters['eigen_model']
@@ -162,7 +161,7 @@ def resize_image(_img: np.ndarray, _size: int):
 
 
 def produce_training_data(who: str, timeout: int=2000):
-	output_dir = os.sep.join(['training_data', who])
+	output_dir = os.sep.join(['resources/train', who])
 	output = os.sep.join([output_dir, who])
 	os.mkdir(output_dir)
 

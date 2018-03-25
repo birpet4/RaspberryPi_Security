@@ -4,3 +4,11 @@
 **/.idea
 **/.DS_Store
 virtual_env
+**/passwd
+**/*.key
+**/*.srl
+**/*.pem
+**/*.csr
+**/*.csr.config
+**/*.crt
+**/*.ext

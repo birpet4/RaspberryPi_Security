@@ -1,10 +1,9 @@
 import os
 import sys
 import time
+import cv2
 from multiprocessing import Process, Event
 from threading import Thread
-
-sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from raspberry_sec.module.camera.producer import CameraProducer
 from raspberry_sec.module.camera.consumer import CameraConsumer, ConsumerContext
@@ -36,7 +35,6 @@ def setup_context(proxy: ProducerDataProxy, event: Event):
 
 
 def show_image(context: ProcessContext):
-	import cv2
 	data_proxy = context.get_prop('shared_data_proxy')
 	consumer = CameraConsumer(set_consumer_parameters())
 	consumer_context = ConsumerContext(None, False)

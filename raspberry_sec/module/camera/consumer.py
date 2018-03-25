@@ -1,5 +1,6 @@
 import logging
 import time
+import cv2
 from raspberry_sec.interface.producer import Type
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
@@ -21,8 +22,6 @@ class CameraConsumer(Consumer):
 		return 'CameraConsumer'
 
 	def run(self, context: ConsumerContext):
-		import cv2
-
 		img = context.data
 		if img is not None:
 			cv2.imshow('Webcam', img)

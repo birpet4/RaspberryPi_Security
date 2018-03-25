@@ -1,3 +1,5 @@
+import cv2
+import os
 import logging
 import time
 from raspberry_sec.interface.producer import Type
@@ -28,20 +30,17 @@ class FacedetectorConsumer(Consumer):
 		:param file: e.g. Cascade.xml
 		:return: the path for the file
 		"""
-		import os
 		return os.sep.join([os.path.dirname(__file__), file])
 
 	def initialize(self):
 		"""
 		Initializes component
 		"""
-		import cv2
 		FacedetectorConsumer.LOGGER.info('Initializing component')
 		self.face_cascade = cv2.CascadeClassifier(FacedetectorConsumer.get_path(self.parameters['cascade_file']))
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):
-		import cv2
 		if not self.initialized:
 			self.initialize()
 

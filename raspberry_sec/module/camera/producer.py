@@ -1,5 +1,5 @@
 import logging
-
+import cv2
 from raspberry_sec.interface.producer import Producer, ProducerDataManager, ProducerDataProxy, Type
 from raspberry_sec.system.util import ProcessContext
 
@@ -31,7 +31,6 @@ class CameraProducer(Producer):
 		return manager.CameraProducerDataProxy()
 
 	def run(self, context: ProcessContext):
-		import cv2
 		try:
 			cam = cv2.VideoCapture(self.parameters['device'])
 			if not cam.isOpened():

@@ -1,5 +1,7 @@
 import logging
 import json
+import os
+import cv2
 from raspberry_sec.interface.producer import Type
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
@@ -31,14 +33,12 @@ class FacerecognizerConsumer(Consumer):
 		:param file: e.g. Cascade.xml
 		:return: the path for the file
 		"""
-		import os
 		return os.sep.join([os.path.dirname(__file__), file])
 
 	def initialize(self):
 		"""
 		Initializes component
 		"""
-		import cv2
 		FacerecognizerConsumer.LOGGER.info('Initializing component')
 
 		self.eigen_recognizer = cv2.face.EigenFaceRecognizer_create(
@@ -72,24 +72,22 @@ class FacerecognizerConsumer(Consumer):
 		self.initialized = True
 
 	def run(self, context: ConsumerContext):
-		import cv2
 		if not self.initialized:
 			self.initialize()
 
 		# the data is expected to be the detected face
 		face = context.data
+		context.alert = True
 
 		if face is not None:
 			face = cv2.resize(face, (self.parameters['size'], self.parameters['size']))
 			name = self.recognize(face)
 			if name is None:
-				context.alert = False
 				context.alert_data = 'Cannot recognize face'
 			else:
-				context.alert = True
+				context.alert = False
 				context.alert_data = name
 		else:
-			context.alert = False
 			FacerecognizerConsumer.LOGGER.warning('Face was not provided (is None)')
 
 		return context

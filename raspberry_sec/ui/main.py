@@ -222,7 +222,8 @@ class FeedWebSocketHandler(WebSocketHandler, BaseHandler):
         resized = cv2.resize(img, (0, 0), fx=0.5, fy=0.5)
         png_encoded = cv2.imencode('.png', resized)[1]
         b64_encoded = base64.b64encode(png_encoded.tostring())
-        return b64_encoded.decode('utf-8')
+        final_format = b64_encoded.decode('utf-8')
+        return '<img class="img-responsive center-block" src="data:image/png;base64,' + final_format + '">'
 
     def on_message(self, message):
         """
@@ -238,8 +239,7 @@ class FeedWebSocketHandler(WebSocketHandler, BaseHandler):
         else:
             producer = [p for p in runtime.pca_system.producer_set if p.get_name() == selected][0]
             proxy = runtime.pca_system.prod_to_proxy[producer]
-            img = self.img_to_str(proxy.get_data())
-            self.write_message('<img class="img-responsive center-block" src="data:image/png;base64,' + img + '">')
+            self.write_message(self.img_to_str(proxy.get_data()))
 
     def on_close(self):
         FeedWebSocketHandler.LOGGER.info('Closing web-socket')

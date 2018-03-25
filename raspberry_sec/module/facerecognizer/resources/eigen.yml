@@ -1,6 +1,6 @@
 %YAML:1.0
 ---
-threshold: 2500.
+threshold: 2000.
 num_components: 7
 mean: !!opencv-matrix
    rows: 1

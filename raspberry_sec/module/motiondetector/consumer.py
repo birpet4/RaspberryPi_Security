@@ -1,5 +1,6 @@
 import logging
 import time
+import cv2
 from raspberry_sec.interface.producer import Type
 from raspberry_sec.interface.consumer import Consumer, ConsumerContext
 
@@ -22,8 +23,6 @@ class MotiondetectorConsumer(Consumer):
 		return 'MotiondetectorConsumer'
 
 	def run(self, context: ConsumerContext):
-		import cv2
-
 		img = context.data
 		context.alert = False
 

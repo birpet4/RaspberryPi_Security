@@ -6,14 +6,14 @@
             "__type__": "EmailAction",
             "parameters": {
                 "from_addr": "mt.raspberry.pi@gmail.com",
-                "password": "",
+                "password": "mt_raspberry_pi",
                 "smtp_addr": "smtp.gmail.com:587",
                 "subject": "RaspberryPi ALERT",
                 "to_addr": "mate.torok.de@gmail.com",
                 "user": "mt.raspberry.pi"
             }
         },
-        "query": "@STREAM1@ and not @STREAM2@"
+        "query": "@STREAM1@ and @STREAM2@"
     },
     "streams": [
         {
