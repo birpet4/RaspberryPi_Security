@@ -188,7 +188,7 @@ class FeedHandler(BaseHandler):
         else:
             producers = []
 
-        self.render('feed.html', producers=producers, ip=os.environ['PCA_IP'])
+        self.render('feed.html', producers=producers)
 
 
 class FeedWebSocketHandler(WebSocketHandler, BaseHandler):
