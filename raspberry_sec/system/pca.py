@@ -350,9 +350,11 @@ class PCASystemJSONEncoder(JSONEncoder):
 		:return: dict version of the input
 		"""
 		obj_dict = dict()
+		obj_dict['msg_limit'] = obj.message_limit
+		obj_dict['polling_interval'] = obj.polling_interval
 		obj_dict['query'] = obj.query
-
 		obj_dict['action'] = dict()
+
 		obj_dict['action'][PCASystemJSONEncoder.TYPE] = type(obj.action).__name__
 		obj_dict['action'][PCASystemJSONEncoder.PARAMETERS] = obj.action.parameters
 
@@ -439,6 +441,8 @@ class PCASystemJSONDecoder(JSONDecoder):
 		try:
 			stream_controller = StreamController()
 			stream_controller.query = obj_dict['query']
+			stream_controller.msg_limit = int(obj_dict['msg_limit'])
+			stream_controller.polling_interval = int(obj_dict['polling_interval'])
 
 			action_class_name = obj_dict['action'][PCASystemJSONEncoder.TYPE]
 			parameters_dict = obj_dict['action'][PCASystemJSONEncoder.PARAMETERS]

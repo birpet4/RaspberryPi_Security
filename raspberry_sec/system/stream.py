@@ -121,8 +121,6 @@ class StreamController(ProcessReady):
 	"""
 	LOGGER = logging.getLogger('StreamController')
 	PLACEHOLDER_PATTERN = '@.*?@'
-	POLLING_INTERVAL = 3
-	MESSAGE_LIMIT = 100
 
 	def __init__(self):
 		"""
@@ -130,6 +128,8 @@ class StreamController(ProcessReady):
 		"""
 		self.action = None
 		self.query = 'False'
+		self.polling_interval = 3
+		self.message_limit = 100
 
 	@staticmethod
 	def evaluate_query(query: str):
@@ -191,7 +191,7 @@ class StreamController(ProcessReady):
 				count = 0
 
 				# fetch messages
-				while not message_queue.empty() and count <= StreamController.MESSAGE_LIMIT:
+				while not message_queue.empty() and count <= self.message_limit:
 					messages.append(message_queue.get(block=False))
 					count += 1
 
@@ -202,4 +202,4 @@ class StreamController(ProcessReady):
 				if alert:
 					executor.submit(self.action.fire, action_messages)
 
-				time.sleep(StreamController.POLLING_INTERVAL)
+				time.sleep(self.polling_interval)

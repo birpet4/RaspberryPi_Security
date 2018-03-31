@@ -13,6 +13,8 @@
                 "user": "mt.raspberry.pi"
             }
         },
+        "msg_limit": "100",
+        "polling_interval": "3",
         "query": "@STREAM1@ and @STREAM2@"
     },
     "streams": [
