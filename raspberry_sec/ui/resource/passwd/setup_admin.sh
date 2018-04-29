@@ -6,11 +6,14 @@
 #
 
 # Delete
-chmod 700 passwd
-rm passwd
+if [ -e passwd ]
+then
+	chmod 700 passwd
+	rm passwd
+fi
 
 # Create
-python3.5 setup_admin.py
+python3 setup_admin.py
 
 # Chmod
 chmod 444 passwd
