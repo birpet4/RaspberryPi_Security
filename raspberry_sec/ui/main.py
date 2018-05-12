@@ -352,7 +352,7 @@ if __name__ == '__main__':
     ProcessReady.setup_logging(log_runtime.log_queue)
 
     server = make_app(log_runtime)
-    server.listen(63973)
+    server.listen(8080)
     IOLoop.current().start()
 
     # Stop logging process
