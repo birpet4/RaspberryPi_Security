@@ -44,7 +44,7 @@ def set_detector_parameters():
 	return parameters
 
 
-def integration_test():
+def test():
 	# Given
 	detector_consumer = FacedetectorConsumer(set_detector_parameters())
 	recognizer_consumer = FacerecognizerConsumer(set_parameters())
@@ -189,4 +189,4 @@ def produce_training_data(who: str, timeout: int=2000):
 if __name__ == '__main__':
 	# produce_training_data('mate_c', 500)
 	train()
-	integration_test()
+	test()

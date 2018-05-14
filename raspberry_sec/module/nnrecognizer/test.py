@@ -284,19 +284,22 @@ def test():
 		cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':
+def train():
 	ctx = Context(
 		img_size=128,
 		batch_size=64,
 		epochs=15,
 		lr=0.00005,
 		loss_func=loss.mean_absolute_error)
-	#ctx.load_data(['neg', 'pos'])
-	#ctx.pre_process_data()
+	ctx.pre_process_data(detect=False, update=False)
+	ctx.load_data(['neg', 'pos'])
 
-	#nn = NeuralNetwork(ctx)
-	#nn.initialize()
-	#nn.train_model()
-	#nn.evaluate_model()
+	nn = NeuralNetwork(ctx)
+	nn.initialize()
+	nn.train_model()
+	nn.evaluate_model()
 
+
+if __name__ == '__main__':
+	# train()
 	test()
