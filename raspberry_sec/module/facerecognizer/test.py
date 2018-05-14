@@ -1,6 +1,6 @@
 import cv2
-import os
-import sys
+import os, sys
+import argparse
 import numpy as np
 import json
 import logging
@@ -163,7 +163,7 @@ def resize_image(_img: np.ndarray, _size: int):
 def produce_training_data(who: str, timeout: int=2000):
 	output_dir = os.sep.join(['resources/train', who])
 	output = os.sep.join([output_dir, who])
-	os.mkdir(output_dir)
+	os.makedirs(output_dir)
 
 	context = ConsumerContext(None, False)
 	detector_consumer = FacedetectorConsumer(set_detector_parameters())
@@ -187,6 +187,25 @@ def produce_training_data(who: str, timeout: int=2000):
 
 
 if __name__ == '__main__':
-	# produce_training_data('mate_c', 500)
-	train()
+	parser = argparse.ArgumentParser(description='== Face Recognizer (testing/training module) ==')
+	parser.add_argument('-p', '--produce',
+						help='If training data should be produced (no training/testing)',
+						action='store_true')
+	parser.add_argument('-w', '--who',
+						help='For whom the data should be produced (only with -p)',
+						type=str,
+						required=False)
+	parser.add_argument('-tr', '--training',
+						help='If training should be conducted before testing',
+						action='store_true')
+	args = parser.parse_args()
+
+	if args.produce:
+		produce_training_data(args.who, 1000)
+		exit(0)
+
+	# If training is enabled
+	if args.training:
+		train()
+
 	test()

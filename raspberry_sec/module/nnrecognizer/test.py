@@ -1,5 +1,6 @@
 import os, sys
 import logging
+import argparse
 import cv2
 import numpy as np
 from keras.models import Sequential
@@ -284,14 +285,19 @@ def test():
 		cv2.destroyAllWindows()
 
 
-def train():
+def train(detect: bool, update: bool):
+	"""
+	Pre-processing (input parameters) + NN training
+	:param detect: if input images should undergo face-detection
+	:param update: if the detected face should override the original image
+	"""
 	ctx = Context(
 		img_size=128,
 		batch_size=64,
 		epochs=15,
 		lr=0.00005,
 		loss_func=loss.mean_absolute_error)
-	ctx.pre_process_data(detect=False, update=False)
+	ctx.pre_process_data(detect=detect, update=update)
 	ctx.load_data(['neg', 'pos'])
 
 	nn = NeuralNetwork(ctx)
@@ -301,5 +307,20 @@ def train():
 
 
 if __name__ == '__main__':
-	# train()
+	parser = argparse.ArgumentParser(description='== NN Face Recognizer (testing/training module) ==')
+	parser.add_argument('-tr', '--training',
+						help='If training should be conducted before testing',
+						action='store_true')
+	parser.add_argument('-d', '--detect',
+						help='If the input should go under face-detection (only with -tr)',
+						action='store_true')
+	parser.add_argument('-u', '--update',
+						help='If the input should be updated with the face that has been detected (only with -d)',
+						action='store_true')
+	args = parser.parse_args()
+
+	# If training is enabled
+	if args.training:
+		train(args.detect, args.update)
+
 	test()
