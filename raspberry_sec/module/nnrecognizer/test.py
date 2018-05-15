@@ -216,7 +216,7 @@ class NeuralNetwork:
 		m.add(Dense(units=num_classes, activation='softmax'))
 
 		# Compile
-		m.compile(loss=ctx.loss_func, optimizer=Adam(ctx.lr), metrics=['accuracy'])
+		m.compile(loss=self.ctx.loss_func, optimizer=Adam(self.ctx.lr), metrics=['accuracy'])
 		m.summary()
 		self.model = m
 
