@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+        <li><a href="configure">Configure</a></li>
+        <li><a href="control">Control</a></li>
+        <li class="active"><a>Feed<span class="sr-only">(current)</span></a></li>
+        <li><a href="about">About</a></li>
+      </ul>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1 class="page-header">Live Feed</h1>
+        <p>The following list contains every producer of type: CAMERA</p>
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="feed_dropdown" data-toggle="dropdown">
+                Producers <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                {% for producer in producers %}
+                    <li><a href="#">{{ producer }}</a></li>
+                {% end %}
+            </ul>
+        </div>
+        <div class="panel panel-default" id="feed_content">
+        </div>
+    </div>
+</div>
+
+{% end body %}
