@@ -75,6 +75,12 @@ class Producer(ProcessReady):
 		:param context: Process context
 		"""
 		pass
+	
+	def get_zone(self):
+		"""
+		:return: name of the zone, where the producer is
+		"""
+		pass	
 
 	def get_data(self, data_proxy: ProducerDataProxy):
 		"""

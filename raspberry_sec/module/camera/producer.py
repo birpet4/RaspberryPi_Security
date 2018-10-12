@@ -32,6 +32,8 @@ class CameraProducer(Producer):
 
 	def run(self, context: ProcessContext):
 		try:
+			zone = self.parameters['zone']
+			CameraProducer.LOGGER.info('ZONE:' + str(self.parameters['zone']))
 			cam = cv2.VideoCapture(self.parameters['device'])
 			if not cam.isOpened():
 				CameraProducer.LOGGER.error('Cannot capture device: ' + str(self.parameters['device']))
@@ -55,6 +57,12 @@ class CameraProducer(Producer):
 		finally:
 			CameraProducer.LOGGER.debug('Stopping capturing images')
 			cam.release()
+	
+	def get_zone(self):
+		"""
+		:return the zone, where the producer is
+		"""
+		return self.parameters['zone']	
 
 	def get_data(self, data_proxy: ProducerDataProxy):
 		CameraProducer.LOGGER.debug('Producer called')

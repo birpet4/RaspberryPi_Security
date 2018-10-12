@@ -53,7 +53,8 @@
                 "parameters": {
                     "device": 0,
                     "unsuccessful_limit": 50,
-                    "wait_key_interval": 250
+                    "wait_key_interval": 250,
+                    "zone": "kitchen"
                 }
             }
         },
@@ -95,7 +96,8 @@
                 "parameters": {
                     "device": 0,
                     "unsuccessful_limit": 50,
-                    "wait_key_interval": 250
+                    "wait_key_interval": 250,
+                    "zone": "kitchen"
                 }
             }
         }
