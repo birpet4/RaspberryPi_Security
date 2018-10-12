@@ -9,6 +9,7 @@ class Type(Enum):
 	Producer types
 	"""
 	CAMERA = 1
+	MICROPHONE = 2
 
 
 class ProducerDataManager(BaseManager):
