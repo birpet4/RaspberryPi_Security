@@ -14,8 +14,25 @@
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <table class="table">
             <tr>
+                <th>Zones:</th>
+		<td>
+			<input type="checkbox" name="zone_1" value="bedroom"> Bedroom
+
+			<input type="checkbox" name="zone_2" value="livingroom"> Living Room
+
+			<input type="checkbox" name="zone_3" value="hallway"> Hallway
+
+			<input type="checkbox" name="zone_4" value="kitchen"> Kitchen
+
+			<input type="checkbox" name="zone_5" value="diningroom"> Dining Room
+
+			<input type="checkbox" name="zone_6" value="frontentrance"> Front Entrance
+		</td>
+            </tr>
+            <tr>
                 <th>Status:</th>
                 <td id="ctrl_status">{{ status['text'] }}</td>
+
             </tr>
             <tr>
                 <th></th>
@@ -24,6 +41,7 @@
                     <button type="button" {{ status['start'] }} id="ctrl_start" class="btn btn-success">Start</button>
                     <button type="button" {{ status['stop'] }} id="ctrl_stop" class="btn btn-danger">Stop</button>
                 </td>
+
             </tr>
         </table>
     </div>

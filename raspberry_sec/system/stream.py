@@ -15,10 +15,39 @@ class ZoneManager:
 	"""
 	LOGGER = logging.getLogger('ZoneManager')
 
-	def __init(self):
-		self.zones = dict()
+	def __init__(self, _zones: dict):
+		"""
+		Constructor
+		:param _zones: zones coming from StreamController JSON
+		"""
+		self.zones = _zones
+
 	def validate(self):
-		print('semmi')
+		"""
+		This method validates whether zones is properly configured.
+		Raises exception if not.
+		:return True if it seems to be alright
+		"""
+		if self.zones is None:
+			msg = 'No producer set for stream: ' + self.name
+			ZoneManager.LOGGER.error(msg)
+			raise AttributeError(msg)
+
+		return True
+
+	def print_zones(self):
+		""" print available zones """
+		zone_names = list(self.zones.keys())
+		for x in range(len(self.zones)):
+			print(zone_names[x])
+
+	def toggle_zone(self, zone: str):
+		"""
+		This method toggle zone activity //TODO
+		"""
+		for key, value in self.zones.items():
+			if key == zone:
+				self.zones[key] = not value
 	def run(self):
 		print('semmi')
 
@@ -196,8 +225,8 @@ class StreamController(ProcessReady):
 		:param context: Process context
 		"""
 		message_queue = context.get_prop('message_queue')
-		print('Most jkonnek a tonak')
-		print(self.zones)
+		zone_manager = ZoneManager(self.zones)
+		print(zone_manager.zones)
 		# iterate through messages in queue
 		with ThreadPoolExecutor(max_workers=4) as executor:
 			while True:
