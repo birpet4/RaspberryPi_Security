@@ -9,6 +9,19 @@ from raspberry_sec.interface.consumer import ConsumerContext
 from raspberry_sec.system.util import ProcessContext, ProcessReady
 
 
+class ZoneManager:
+	"""
+	Class for manage zones
+	"""
+	LOGGER = logging.getLogger('ZoneManager')
+
+	def __init(self):
+		self.zones = dict()
+	def validate(self):
+		print('semmi')
+	def run(self):
+		print('semmi')
+
 class Stream(ProcessReady):
 	"""
 	Class for storing stream components.
@@ -130,6 +143,7 @@ class StreamController(ProcessReady):
 		self.query = 'False'
 		self.polling_interval = 3
 		self.message_limit = 100
+		self.zones = None
 
 	@staticmethod
 	def evaluate_query(query: str):
@@ -182,7 +196,8 @@ class StreamController(ProcessReady):
 		:param context: Process context
 		"""
 		message_queue = context.get_prop('message_queue')
-
+		print('Most jkonnek a tonak')
+		print(self.zones)
 		# iterate through messages in queue
 		with ThreadPoolExecutor(max_workers=4) as executor:
 			while True:
