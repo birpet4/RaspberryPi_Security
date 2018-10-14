@@ -63,6 +63,7 @@ function printChecked(){
 		if(items[i].type=='checkbox' && items[i].checked==true)
 			selectedItems+=items[i].value+",";
 	}
+	selectedItems = selectedItems.slice(0,-1);
 	if(!selectedItems)
 		alert('No zone selected, please select one');
 	return selectedItems;
@@ -75,7 +76,8 @@ $('#ctrl_start').click(
 });
 $('#ctrl_stop').click(
     function(){
-        ctrlButtonSend('false');
+	zone = null
+        ctrlButtonSend('false', zone);
 });
 
 // Login

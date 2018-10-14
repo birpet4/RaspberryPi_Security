@@ -164,17 +164,15 @@ class ControlHandler(BaseHandler):
         ControlHandler.LOGGER.info('Handling POST message')
         self.set_header('Content-Type', 'text/plain')
        
-        on = 'true' == self.get_argument('on') 
-        
-        zone = self.get_argument('zone') 
+        on = 'true' == self.get_argument('on')       
+        zones = self.get_argument('zone') 
 
-        if zone:
-            print(zone)
-        e
-        
         if on:
             self.stop_pca()
             self.start_pca()
+            runtime = self.get_pca_runtime()    
+            runtime.pca_system.set_zonemanager(zones)
+
         else:
             self.stop_pca()
         

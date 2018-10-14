@@ -21,6 +21,9 @@ class ZoneManager:
 		:param _zones: zones coming from StreamController JSON
 		"""
 		self.zones = _zones
+	"""
+	def __init__(self, _zones: str):
+	"""
 
 	def validate(self):
 		"""

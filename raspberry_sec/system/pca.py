@@ -7,7 +7,7 @@ from raspberry_sec.system.util import Loader, DynamicLoader, ProcessContext, Pro
 from raspberry_sec.interface.action import Action
 from raspberry_sec.interface.consumer import Consumer
 from raspberry_sec.interface.producer import Producer, ProducerDataManager
-from raspberry_sec.system.stream import StreamController, Stream
+from raspberry_sec.system.stream import StreamController, Stream, ZoneManager
 
 
 class PCASystem(ProcessReady):
@@ -30,6 +30,7 @@ class PCASystem(ProcessReady):
 
 		self.manager = None
 		self.stream_controller = None
+		self.zone_manager = None
 		self.sc_queue = None
 		self.sc_process = None
 
@@ -49,6 +50,11 @@ class PCASystem(ProcessReady):
 			return False
 
 		return True
+
+	def set_zonemanager(self, _zones: str):
+		zones = _zones.split(',')
+		print('elv -----------------------------------')
+		print(zones)
 
 	def run(self, context: ProcessContext):
 		"""
