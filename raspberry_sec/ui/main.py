@@ -163,13 +163,21 @@ class ControlHandler(BaseHandler):
         """
         ControlHandler.LOGGER.info('Handling POST message')
         self.set_header('Content-Type', 'text/plain')
-        on = 'true' == self.get_argument('on')
+       
+        on = 'true' == self.get_argument('on') 
+        
+        zone = self.get_argument('zone') 
 
+        if zone:
+            print(zone)
+        e
+        
         if on:
             self.stop_pca()
             self.start_pca()
         else:
             self.stop_pca()
+        
 
 
 class FeedHandler(BaseHandler):

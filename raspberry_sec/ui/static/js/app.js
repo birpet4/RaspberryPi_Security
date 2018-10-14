@@ -41,10 +41,11 @@ $('#cfg_form').submit(function(e){
 });
 
 // Control
-function ctrlButtonSend(onStr) {
+function ctrlButtonSend(onStr, zone) {
     $.ajax({
         type : 'POST',
-        data: {'on': onStr},
+ //       data: {'on': onStr,'zone': zone},
+        data: {'on': onStr, 'zone': zone},
         beforeSend: function(xhr) {
             xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
         },
@@ -54,9 +55,23 @@ function ctrlButtonSend(onStr) {
         }
     });
 }
+
+function printChecked(){
+	var items=document.getElementsByName('zone');
+	var selectedItems="";
+	for(var i=0; i<items.length; i++){
+		if(items[i].type=='checkbox' && items[i].checked==true)
+			selectedItems+=items[i].value+",";
+	}
+	if(!selectedItems)
+		alert('No zone selected, please select one');
+	return selectedItems;
+}
+
 $('#ctrl_start').click(
     function(){
-        ctrlButtonSend('true');
+	var zone = printChecked();
+        ctrlButtonSend('true', zone);
 });
 $('#ctrl_stop').click(
     function(){
