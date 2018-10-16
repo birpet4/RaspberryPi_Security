@@ -144,7 +144,7 @@ class PCASystem(ProcessReady):
 			PCASystem.LOGGER.info('Starting producer: ' + producer.get_name())
 			self.prod_to_proc[producer] = proc
 			proc.start()
-
+	
 	def start_stream_controller_process(self, context: ProcessContext):
 		"""
 		Creates and fires up the stream controller process
@@ -153,7 +153,9 @@ class PCASystem(ProcessReady):
 		sc_context = ProcessContext(
 			log_queue=context.logging_queue,
 			stop_event=context.stop_event,
-			message_queue=self.sc_queue
+			message_queue=self.sc_queue,
+			zonemanager=self.zone_manager
+			
 		)
 		self.sc_process = ProcessContext.create_process(
 			target=self.stream_controller.start,
@@ -166,7 +168,7 @@ class PCASystem(ProcessReady):
 
 	def start_stream_processes(self, context: ProcessContext):
 		"""
-		Creates the stream processes and fires them up.
+		Creates the stream processes .zoand fires them up.
 		:param context: holds the 'stop event' and the loggign queue as well
 		"""
 		for stream in self.streams:

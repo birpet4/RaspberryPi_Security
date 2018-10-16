@@ -39,6 +39,9 @@ class ZoneManager:
 
 		return True
 
+	def get_zones(self):
+		return self.zones
+
 	def print_zones(self):
 		""" print available zones """
 		zone_names = list(self.zones.keys())
@@ -229,8 +232,11 @@ class StreamController(ProcessReady):
 		:param context: Process context
 		"""
 		message_queue = context.get_prop('message_queue')
-
-		# iterate through messages in queue
+		zone_manager = context.get_prop('zonemanager')
+		print(zone_manager.zones)
+		zone_manager.toggle_zone('livingroom')
+		print(zone_manager.zones)
+		# iterate through messages in queuone
 		with ThreadPoolExecutor(max_workers=4) as executor:
 			while True:
 				StreamController.LOGGER.info('Checking message queue')
