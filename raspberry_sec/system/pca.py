@@ -154,7 +154,6 @@ class PCASystem(ProcessReady):
 			log_queue=context.logging_queue,
 			stop_event=context.stop_event,
 			message_queue=self.sc_queue,
-			zonemanager=self.zone_manager
 			
 		)
 		self.sc_process = ProcessContext.create_process(
@@ -176,7 +175,8 @@ class PCASystem(ProcessReady):
 				stop_event=context.stop_event,
 				log_queue=context.logging_queue,
 				shared_data_proxy=self.prod_to_proxy[stream.producer],
-				sc_queue=self.sc_queue
+				sc_queue=self.sc_queue,
+				zonemanager=self.zone_manager
 			)
 			proc = ProcessContext.create_process(
 				target=stream.start,
@@ -363,7 +363,6 @@ class PCASystemJSONEncoder(JSONEncoder):
 		obj_dict['polling_interval'] = obj.polling_interval
 		obj_dict['query'] = obj.query
 		obj_dict['action'] = dict()
-		obj_dict['zones'] = dict()
 
 		obj_dict['action'][PCASystemJSONEncoder.TYPE] = type(obj.action).__name__
 		obj_dict['action'][PCASystemJSONEncoder.PARAMETERS] = obj.action.parameters
@@ -453,8 +452,7 @@ class PCASystemJSONDecoder(JSONDecoder):
 			stream_controller.query = obj_dict['query']
 			stream_controller.msg_limit = int(obj_dict['msg_limit'])
 			stream_controller.polling_interval = int(obj_dict['polling_interval'])
-			stream_controller.zones = obj_dict['zones']
-			print(stream_controller.zones)
+
 			action_class_name = obj_dict['action'][PCASystemJSONEncoder.TYPE]
 			parameters_dict = obj_dict['action'][PCASystemJSONEncoder.PARAMETERS]
 

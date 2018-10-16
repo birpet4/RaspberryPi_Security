@@ -39,11 +39,19 @@ class ZoneManager:
 
 		return True
 
+	def is_zone_active(self, zone: str):
+		for key, value in self.zones.items():
+			if key == zone and self.zones[key] == True:
+				return True
+		return False
+
 	def get_zones(self):
 		return self.zones
 
 	def print_zones(self):
-		""" print available zones """
+		""" 
+		print available zones 
+		"""
 		zone_names = list(self.zones.keys())
 		for x in range(len(self.zones)):
 			print(zone_names[x])
@@ -123,13 +131,14 @@ class Stream(ProcessReady):
 		# for inter-process communication
 		data_proxy = context.get_prop('shared_data_proxy')
 		sc_queue = context.get_prop('sc_queue')
-
+		zone_manager = context.get_prop('zonemanager')
+		
 		# stream main loop
 		while True:
 			try:
 				Stream.LOGGER.debug(self.name + ' calling producer')
 				data = self.producer.get_data(data_proxy)
-
+				
 				c_context = ConsumerContext(data, True)
 				for consumer in self.consumers:
 					if not c_context.alert:
@@ -137,7 +146,8 @@ class Stream(ProcessReady):
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
 					c_context = consumer.run(c_context)
 
-				if c_context.alert:
+				if c_context.alert and zone_manager.is_zone_active(self.producer.get_zone()):
+					
 					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
 					sc_queue.put(StreamControllerMessage(
 						_alert=c_context.alert,
@@ -162,7 +172,7 @@ class StreamControllerMessage:
 		self.alert = _alert
 		self.msg = _msg
 		self.sender = _sender
-
+		
 
 class StreamController(ProcessReady):
 	"""
@@ -232,10 +242,7 @@ class StreamController(ProcessReady):
 		:param context: Process context
 		"""
 		message_queue = context.get_prop('message_queue')
-		zone_manager = context.get_prop('zonemanager')
-		print(zone_manager.zones)
-		zone_manager.toggle_zone('livingroom')
-		print(zone_manager.zones)
+
 		# iterate through messages in queuone
 		with ThreadPoolExecutor(max_workers=4) as executor:
 			while True:
