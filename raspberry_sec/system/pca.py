@@ -27,10 +27,11 @@ class PCASystem(ProcessReady):
 		self.stream_processes = []
 		self.prod_to_proc = {}
 		self.prod_to_proxy = {}
+		self.zone_manager = None
 
 		self.manager = None
 		self.stream_controller = None
-		self.zone_manager = None
+		self.zm_process = None
 		self.sc_queue = None
 		self.sc_process = None
 
@@ -52,9 +53,9 @@ class PCASystem(ProcessReady):
 		return True
 
 	def set_zonemanager(self, _zones: str):
-		zones = _zones.split(',')
-		print('elv -----------------------------------')
-		print(zones)
+		self.zone_manager = ZoneManager()
+		data = json.loads(_zones)
+		self.zone_manager.initialize(data)
 
 	def run(self, context: ProcessContext):
 		"""

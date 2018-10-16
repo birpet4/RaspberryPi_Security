@@ -15,15 +15,16 @@ class ZoneManager:
 	"""
 	LOGGER = logging.getLogger('ZoneManager')
 
-	def __init__(self, _zones: dict):
+	def __init__(self):
 		"""
 		Constructor
-		:param _zones: zones coming from StreamController JSON
+		:param _zones: zones coming from javascript
 		"""
+		self.zones = dict()
+	
+	def initialize(self, _zones: dict):
 		self.zones = _zones
-	"""
-	def __init__(self, _zones: str):
-	"""
+		print(self.zones.keys())
 
 	def validate(self):
 		"""
@@ -228,8 +229,7 @@ class StreamController(ProcessReady):
 		:param context: Process context
 		"""
 		message_queue = context.get_prop('message_queue')
-		zone_manager = ZoneManager(self.zones)
-		print(zone_manager.zones)
+
 		# iterate through messages in queue
 		with ThreadPoolExecutor(max_workers=4) as executor:
 			while True:

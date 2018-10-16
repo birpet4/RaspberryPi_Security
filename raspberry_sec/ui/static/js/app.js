@@ -57,13 +57,19 @@ function ctrlButtonSend(onStr, zone) {
 }
 
 function printChecked(){
-	var items=document.getElementsByName('zone');
-	var selectedItems="";
-	for(var i=0; i<items.length; i++){
-		if(items[i].type=='checkbox' && items[i].checked==true)
-			selectedItems+=items[i].value+",";
+	var items = document.getElementsByName('zone');
+	var selectedItems ='{';
+	for(var i = 0; i < items.length; i++)
+		if(items[i].type == 'checkbox'){
+			selectedItems += '\"';
+			selectedItems += items[i].value + '\":';
+			if(items[i].checked == true)
+				selectedItems += 'true ,';
+			else
+				selectedItems += 'false ,';
 	}
 	selectedItems = selectedItems.slice(0,-1);
+	selectedItems += '}';
 	if(!selectedItems)
 		alert('No zone selected, please select one');
 	return selectedItems;
