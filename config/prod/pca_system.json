@@ -5,18 +5,14 @@
 		"action": {
 			"__type__": "EmailAction",
 			"parameters": {
-				"from_addr": "mt.raspberry.pi@gmail.com",
-				"password": "",
+				"from_addr": "birpet4@gmail.com",
+				"password": "shaginran",
 				"smtp_addr": "smtp.gmail.com:587",
 				"subject": "RaspberryPi ALERT",
-				"to_addr": "mate.torok.de@gmail.com",
+				"to_addr": "birpet4@gmail.com",
 				"user": "mt.raspberry.pi"
 			}
 		},
-		"zones": {
-				"kitchen": true,
-				"living room": false
-			},
 		"msg_limit": "100",
 		"polling_interval": "3",
 		"query": "@STREAM1@ and @STREAM2@"
@@ -94,6 +90,35 @@
 			"name": "STREAM2",
 			"producer": {
 				"__type__": "CameraProducer",
+				"parameters": {
+					"device": 0,
+					"unsuccessful_limit": 50,
+					"wait_key_interval": 250,
+					"zone": "kitchen"
+				}
+			}
+		},
+		{
+			"__type__": "Stream",
+			"consumers": [
+				{
+					"__type__": "VoicerecognizerConsumer",
+					"parameters": {
+						"padding_x": 8,
+						"padding_y": 8,
+						"resize_height": 240,
+						"resize_width": 320,
+						"scale": 1.15,
+						"timeout": 1,
+						"win_stride_x": 4,
+						"win_stride_y": 4
+					}
+				}
+			],
+
+			"name": "STREAM3",
+			"producer": {
+				"__type__": "MicrophoneProducer",
 				"parameters": {
 					"device": 0,
 					"unsuccessful_limit": 50,
