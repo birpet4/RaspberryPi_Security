@@ -3,68 +3,11 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
-
+"""from raspberry_sec.system import zonemanager"""
 from raspberry_sec.interface.action import ActionMessage
 from raspberry_sec.interface.consumer import ConsumerContext
 from raspberry_sec.system.util import ProcessContext, ProcessReady
 
-
-class ZoneManager:
-	"""
-	Class for manage zones
-	"""
-	LOGGER = logging.getLogger('ZoneManager')
-
-	def __init__(self):
-		"""
-		Constructor
-		:param _zones: zones coming from javascript
-		"""
-		self.zones = dict()
-	
-	def initialize(self, _zones: dict):
-		self.zones = _zones
-		print(self.zones.keys())
-
-	def validate(self):
-		"""
-		This method validates whether zones is properly configured.
-		Raises exception if not.
-		:return True if it seems to be alright
-		"""
-		if self.zones is None:
-			msg = 'No producer set for stream: ' + self.name
-			ZoneManager.LOGGER.error(msg)
-			raise AttributeError(msg)
-
-		return True
-
-	def is_zone_active(self, zone: str):
-		for key, value in self.zones.items():
-			if key == zone and self.zones[key] == True:
-				return True
-		return False
-
-	def get_zones(self):
-		return self.zones
-
-	def print_zones(self):
-		""" 
-		print available zones 
-		"""
-		zone_names = list(self.zones.keys())
-		for x in range(len(self.zones)):
-			print(zone_names[x])
-
-	def toggle_zone(self, zone: str):
-		"""
-		This method toggle zone activity //TODO
-		"""
-		for key, value in self.zones.items():
-			if key == zone:
-				self.zones[key] = not value
-	def run(self):
-		print('semmi')
 
 class Stream(ProcessReady):
 	"""
@@ -131,7 +74,6 @@ class Stream(ProcessReady):
 		# for inter-process communication
 		data_proxy = context.get_prop('shared_data_proxy')
 		sc_queue = context.get_prop('sc_queue')
-		zone_manager = context.get_prop('zonemanager')
 		
 		# stream main loop
 		while True:
@@ -146,8 +88,7 @@ class Stream(ProcessReady):
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
 					c_context = consumer.run(c_context)
 
-				if c_context.alert and zone_manager.is_zone_active(self.producer.get_zone()):
-					
+				if c_context.alert and zonemanager.is_zone_active(self.produces.get_zone()):
 					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
 					sc_queue.put(StreamControllerMessage(
 						_alert=c_context.alert,
@@ -189,7 +130,6 @@ class StreamController(ProcessReady):
 		self.query = 'False'
 		self.polling_interval = 3
 		self.message_limit = 100
-		self.zones = None
 
 	@staticmethod
 	def evaluate_query(query: str):
