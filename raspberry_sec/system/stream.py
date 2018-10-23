@@ -3,7 +3,7 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
-"""from raspberry_sec.system import zonemanager"""
+from raspberry_sec.system import zonemanager
 from raspberry_sec.interface.action import ActionMessage
 from raspberry_sec.interface.consumer import ConsumerContext
 from raspberry_sec.system.util import ProcessContext, ProcessReady
@@ -88,7 +88,7 @@ class Stream(ProcessReady):
 					Stream.LOGGER.debug(self.name + ' calling consumer: ' + consumer.get_name())
 					c_context = consumer.run(c_context)
 
-				if c_context.alert and zonemanager.is_zone_active(self.produces.get_zone()):
+				if c_context.alert and zonemanager.is_zone_active(self.producer.get_zone()):
 					Stream.LOGGER.debug(self.name + ' enqueueing controller message')
 					sc_queue.put(StreamControllerMessage(
 						_alert=c_context.alert,

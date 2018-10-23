@@ -32,8 +32,6 @@ class CameraProducer(Producer):
 
 	def run(self, context: ProcessContext):
 		try:
-			zone = self.parameters['zone']
-			CameraProducer.LOGGER.info('ZONE:' + str(self.parameters['zone']))
 			cam = cv2.VideoCapture(self.parameters['device'])
 			if not cam.isOpened():
 				CameraProducer.LOGGER.error('Cannot capture device: ' + str(self.parameters['device']))

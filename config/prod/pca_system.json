@@ -104,14 +104,10 @@
 				{
 					"__type__": "VoicerecognizerConsumer",
 					"parameters": {
-						"padding_x": 8,
-						"padding_y": 8,
-						"resize_height": 240,
-						"resize_width": 320,
-						"scale": 1.15,
-						"timeout": 1,
-						"win_stride_x": 4,
-						"win_stride_y": 4
+						"recognizer": "google",
+						"api_key": "xxx",
+						"language": "en-US",
+						"threshold": 320
 					}
 				}
 			],
@@ -120,9 +116,7 @@
 			"producer": {
 				"__type__": "MicrophoneProducer",
 				"parameters": {
-					"device": 0,
-					"unsuccessful_limit": 50,
-					"wait_key_interval": 250,
+					"device": 4,
 					"zone": "kitchen"
 				}
 			}

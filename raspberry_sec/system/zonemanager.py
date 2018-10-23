@@ -9,11 +9,12 @@ LOGGER = logging.getLogger('ZoneManager')
 zones = None
 
 def initialize(_zones: dict):
-
+	"""
+	Function for inizializing the zone manager module
+	:param _zones: the zones coming from the html code
+	"""
 	LOGGER.info('Initializing ZoneManager...')
 	zones = _zones
-	print(zones)
-	print(_zones)
 	pickle.dump(zones, open('zone.pkl','wb'))
 	if zones:
 		print(zones)
@@ -23,47 +24,35 @@ def initialize(_zones: dict):
 
 
 def get_zones():
-	global zones
+	"""
+	Function for get available zones
+	return: dictionary of zones
+	"""
 	return pickle.load(open('zone.pkl','rb'))
 
-def validate(self):
+def is_zone_active(zone: str):
 	"""
-	This method validates whether zones is properly configured.
-	Raises exception if not.
-	:return True if it seems to be alright
+	Function for deciding whether zone is active or not
+	:param zone: zone, from which we want to know whether active or not
 	"""
-	if self.zones is None:
-		msg = 'No producer set for stream: ' + self.name
-		ZoneManager.LOGGER.error(msg)
-		raise AttributeError(msg)
-		return True
-
-def is_zone_active(self, zone: str):
 	zones = pickle.load(open('zone.pkl','rb'))
 	for key, value in zones.items():
 		if key == zone and zones[key] == True:
+			LOGGER.info(zone + ' is active')
 			return True
+	LOGGER.info(zone + ' is inactive, not alert')
 	return False
 
 
-def print_zones(self):
-	""" 
-	print available zones 
-	"""
-	zone_names = list(self.zones.keys())
-	for x in range(len(self.zones)):
-		print(zone_names[x])
-
 def toggle_zone(zone: str):
 	"""
-	This method toggle zone activity //TODO
+	Function for toggle zone activity
+	:param zone: the actual zone what we want to activate or deactivate
 	"""
 	zones = pickle.load(open('zone.pkl','rb'))
 	for key, value in zones.items():
 			if key == zone:
 				zones[key] = not value
+				LOGGER.info('Toggle ' + zone + ' activity')
 				pickle.dump(zones, open('zone.pkl','wb'))
-def run(self):
-	print('semmi')
-
 

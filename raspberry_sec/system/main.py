@@ -30,7 +30,6 @@ class PCARuntime:
 		:param config_path: file
 		:return: PCASystem object
 		"""
-		print(config_path)
 		return PCASystemJSONDecoder.load_from_config(config_path)
 
 	def start(self):

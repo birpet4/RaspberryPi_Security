@@ -6,14 +6,14 @@ from raspberry_sec.system.util import ProcessContext
 
 class MicrophoneProducerDataProxy(ProducerDataProxy):
 	"""
-	For storing shared camera data
+	For storing shared microphone data
 	"""
 	pass
 
 
 class MicrophoneProducer(Producer):
 	"""
-	Class for producing camera sample data
+	Class for producing audio sample data
 	"""
 	LOGGER = logging.getLogger('MicrophoneProducer')
 
@@ -32,19 +32,21 @@ class MicrophoneProducer(Producer):
 
 	def run(self, context: ProcessContext):
 		r = sr.Recognizer()
-		with sr.Microphone() as source:
-    			print("Say something!")
-    			audio = r.listen(source)
-		try:
+
+		with sr.Microphone(device_index=self.parameters['device']) as source:
+    			MicrophoneProducer.LOGGER.info('Microphone active')
+    			audio = r.listen(source)	
+		try:	
 			if audio:
 				data_proxy = context.get_prop('shared_data_proxy')
 				data_proxy.set_data(audio)
+				audio = None
+
 		except sr.UnknownValueError:
 			print("Google Speech Recognition could not understand audio")
 		except sr.RequestError as e:
 	    		print("Could not request results from Google Speech Recognition service; {0}".format(e))
-
-
+					
 	def get_data(self, data_proxy: ProducerDataProxy):
 		MicrophoneProducer.LOGGER.debug('Producer called')
 		return data_proxy.get_data()

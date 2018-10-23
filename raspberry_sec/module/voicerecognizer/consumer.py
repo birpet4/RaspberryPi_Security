@@ -15,15 +15,18 @@ class VoicerecognizerConsumer(Consumer):
 
 	"""
 	LOGGER = logging.getLogger('VoicerecognizerConsumer')
+
 	def __init__(self, parameters: dict):
 		"""
 		Constructor
-		:param parameters: configurations coming from the JSON file
+		:param parameters: see Consumer constructor
 		"""
 		super().__init__(parameters)
 		self.initialized = False
+		self.VoiceRecognizer = None
 
 	def initialize(self):
+		self.VoiceRecognizer = sr.Recognizer()
 		self.initialized = True
 
 	def get_name(self):
@@ -32,28 +35,40 @@ class VoicerecognizerConsumer(Consumer):
 	def run(self, context: ConsumerContext):
 		if not self.initialized:
 			self.initialize()
-		r = sr.Recognizer()
+
+		audio = None
 		audio = context.data
 		context.alert = False
 		zones = zonemanager.get_zones()
+
 		if audio:
 			try:
 
-				you_said = r.recognize_google(audio)
-				print("You said: " + you_said)
+				voice_recognition = self.VoiceRecognizer.recognize_google(audio)
+				VoicerecognizerConsumer.LOGGER.info('You said: ' + voice_recognition)
+
 				for key, value in zones.items():
-					if key in you_said:
-						print('yours ubstring was found')
-						if 'off' or 'on' in you_said:
-							print('onoff was found')
-							zonemanager.toggle_zone(key)
-							print(zonemanager.get_zones())
-							return
-			except sr.UnknownValueError:
-				print("Google Speech Recognition could not understand audio")
+					if key in voice_recognition:
+						if 'off' in voice_recognition:
+							if zones[key] == False:
+								VoicerecognizerConsumer.LOGGER.info(key + ' is already inactive')
+								break
+							else:
+								zonemanager.toggle_zone(key)
+								break
+						if 'on' in voice_recognition:
+							if zones[key] == True:
+								VoicerecognizerConsumer.LOGGER.info(key + ' is already active')
+								break
+							else:
+								zonemanager.toggle_zone(key)
+								break
+	
+			except sr.UnknownValueError: 
+				VoicerecognizerConsumer.LOGGER.info('Voicerecognizer could not understand audio')
 			except sr.RequestError as e:
-				print("Could not request results from Google Speech Recognition service; {0}".format(e))
-				
+				print("Could not request results from Speech Recognition service; {0}".format(e))
+		time.sleep(3)
 		return context
 
 	def get_type(self):
