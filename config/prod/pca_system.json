@@ -6,7 +6,7 @@
 			"__type__": "EmailAction",
 			"parameters": {
 				"from_addr": "birpet4@gmail.com",
-				"password": "shaginran",
+				"password": "",
 				"smtp_addr": "smtp.gmail.com:587",
 				"subject": "RaspberryPi ALERT",
 				"to_addr": "birpet4@gmail.com",
