@@ -94,7 +94,7 @@
 					"device": 0,
 					"unsuccessful_limit": 50,
 					"wait_key_interval": 250,
-					"zone": "kitchen"
+					"zone": "bedroom"
 				}
 			}
 		},
@@ -116,8 +116,9 @@
 			"producer": {
 				"__type__": "MicrophoneProducer",
 				"parameters": {
-					"device": 4,
-					"zone": "kitchen"
+					"device":8,
+					"sample_rate": 44100,
+                                        "chunk_size":  512
 				}
 			}
 		}

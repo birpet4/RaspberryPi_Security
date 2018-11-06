@@ -14,8 +14,16 @@
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <table class="table">
             <tr>
-                <th>Zones:</th>
-		<td>
+                <th>Add Zones:</th>
+                <td id="ctrl_status">
+			<input type="text" id="text_zone">
+			<button id="add_zone">Add Zone</button>
+		</td>
+
+            </tr>
+            <tr>
+                <th>Installed Zones:</th>
+		<td id = "zones">
 			<input type="checkbox" name="zone" value="bedroom"> Bedroom
 
 			<input type="checkbox" name="zone" value="living room"> Living Room

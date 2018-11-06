@@ -56,6 +56,31 @@ function ctrlButtonSend(onStr, zone) {
     });
 }
 
+// Wait until the window finishes loaded before executing any script
+window.onload = function() {
+
+        // Initialize the activityNumber
+        var activityNumber = 3;
+
+        // Select the add_activity button
+        var addButton = document.getElementById("add_zone");
+	
+        // Select the table element
+        var tracklistTable = document.getElementById("zones");
+
+        // Attach handler to the button click event
+        addButton.onclick = function() {
+	var zone = document.getElementById("text_zone").value;
+        var zone_id = zone.toLowerCase();
+        // Add a new row to the table using the correct activityNumber
+          tracklistTable.innerHTML += '<input type="checkbox" name="zone" value="' + zone_id + '">' + zone;
+
+          // Increment the activityNumber
+          activityNumber += 1;
+        }
+
+}
+
 function printChecked(){
 	var items = document.getElementsByName('zone');
 	var selectedItems ='{';
