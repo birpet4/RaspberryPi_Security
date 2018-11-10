@@ -54,9 +54,11 @@ class PCASystem(ProcessReady):
 
 		return True
 
-	def set_zonemanager(self, _zones: str):		
+	def set_zonemanager(self, _zones: str):	
+		zonemanager.initialize()	
 		self.zones = json.loads(_zones)	
-		zonemanager.initialize(self.zones)
+		#zonemanager.initialize(self.zones)
+		zonemanager.set_zones(self.zones)
 
 	def run(self, context: ProcessContext):
 		"""

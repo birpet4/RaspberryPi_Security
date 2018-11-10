@@ -3,7 +3,7 @@ from tornado.httpserver import HTTPServer
 from tornado.web import Application, RequestHandler, authenticated
 from tornado.websocket import WebSocketHandler
 import multiprocessing as mp
-import os, sys, logging, uuid, base64
+import os, sys, logging, uuid, base64, json
 import cv2
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from raspberry_sec.system.main import PCARuntime, LogRuntime
@@ -176,7 +176,25 @@ class ControlHandler(BaseHandler):
         else:
             self.stop_pca()
         
+class ZoneHandler(BaseHandler):
 
+    LOGGER = logging.getLogger('ZoneHandler')
+
+    @authenticated
+    def get(self):
+        """
+        Returns zones from json
+        """
+        ZoneHandler.LOGGER.info('Handling GET message')
+        
+        with open(BaseHandler.CONFIG_PATH, 'r') as file:
+            config = file.read()
+        
+        data = json.loads(config)
+        print(data.keys())
+        stream_controller = data['stream_controller']
+        """self.render("zones.html", data=json.dumps(data))"""
+        self.write(stream_controller['zones'])
 
 class FeedHandler(BaseHandler):
 
@@ -322,7 +340,7 @@ def make_app(log_runtime: LogRuntime):
         'static_path': 'static',
         'login_url': '/login',
         'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes + uuid.uuid4().bytes),
-        'xsrf_cookies': True
+        'xsrf_cookies': False
     }
 
     # Endpoints
@@ -330,6 +348,7 @@ def make_app(log_runtime: LogRuntime):
         (r'/', MainHandler, config),
         (r'/configure', ConfigureHandler, config),
         (r'/control', ControlHandler, config),
+        (r'/zones', ZoneHandler, config),
         (r'/feed', FeedHandler, config),
         (r'/feed/websocket', FeedWebSocketHandler, config),
         (r'/about', AboutHandler, config),
