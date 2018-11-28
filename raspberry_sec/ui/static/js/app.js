@@ -44,7 +44,6 @@ $('#cfg_form').submit(function(e){
 function ctrlButtonSend(onStr, zone) {
     $.ajax({
         type : 'POST',
- //       data: {'on': onStr,'zone': zone},
         data: {'on': onStr, 'zone': zone},
         beforeSend: function(xhr) {
             xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
@@ -56,29 +55,39 @@ function ctrlButtonSend(onStr, zone) {
     });
 }
 
-// Wait until the window finishes loaded before executing any script
+function initZones(zones) {
+	var zoneTable = document.getElementById("controltable");
+	jQuery.each(zones, function(i, value) {
+		zoneTable.insertAdjacentHTML('afterBegin','<tr><td>' + i.charAt(0).toUpperCase() + i.slice(1) + '</td><td><input type="checkbox" name="zone" value="' + i + '"></td></tr>');
+	});
+	zoneTable.insertAdjacentHTML('afterbegin','<tr><th>Zones:</th><th>Arm:</th></tr>');
+
+}
+
 window.onload = function() {
-
-        // Initialize the activityNumber
-        var activityNumber = 3;
-
-        // Select the add_activity button
-        var addButton = document.getElementById("add_zone");
 	
-        // Select the table element
-        var tracklistTable = document.getElementById("zones");
+	if (window.location.href.match('control') != null) {
+		
+		/*$.ajax({
+		  url: 'zones',
+		  cache: false,
+		  success: function(data){
+		    initZones(data);
+		}
+		});*/
+		$.getJSON('zones', function(data) {
+   		 initZones(data)
+		});
 
-        // Attach handler to the button click event
-        addButton.onclick = function() {
-	var zone = document.getElementById("text_zone").value;
-        var zone_id = zone.toLowerCase();
-        // Add a new row to the table using the correct activityNumber
-          tracklistTable.innerHTML += '<input type="checkbox" name="zone" value="' + zone_id + '">' + zone;
+		var addButton = document.getElementById("add_zone");	
+		var zoneTable = document.getElementById("zones");
 
-          // Increment the activityNumber
-          activityNumber += 1;
-        }
-
+		addButton.onclick = function() {
+		  var zone = document.getElementById("text_zone").value;
+		  var zone_id = zone.toLowerCase();
+		  zoneTable.innerHTML += '<input type="checkbox" name="zone" value="' + zone_id + '">' + zone;
+		}
+	}
 }
 
 function printChecked(){

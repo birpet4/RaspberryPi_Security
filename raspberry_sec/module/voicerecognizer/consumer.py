@@ -40,8 +40,9 @@ class VoicerecognizerConsumer(Consumer):
 		audio = context.data
 		context.alert = False
 		zones = zonemanager.get_zones()
-
+		
 		if audio:
+
 			try:
 
 				voice_recognition = self.VoiceRecognizer.recognize_google(audio)

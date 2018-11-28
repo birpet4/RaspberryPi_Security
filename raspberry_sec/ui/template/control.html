@@ -12,17 +12,17 @@
       </ul>
     </div>
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <table class="table">
+        <table class="table" id="controltable">
             <tr>
-                <th>Add Zones:</th>
+                <!--<th>Add Zones:</th>
                 <td id="ctrl_status">
 			<input type="text" id="text_zone">
 			<button id="add_zone">Add Zone</button>
-		</td>
+		</td>-->
 
             </tr>
             <tr>
-                <th>Installed Zones:</th>
+                <!--<th>Installed Zones:</th>
 		<td id = "zones">
 			<input type="checkbox" name="zone" value="bedroom"> Bedroom
 
@@ -35,12 +35,12 @@
 			<input type="checkbox" name="zone" value="dining room"> Dining Room
 
 			<input type="checkbox" name="zone" value="front entrance"> Front Entrance
-		</td>
+		</td>-->
             </tr>
             <tr>
                 <th>Status:</th>
                 <td id="ctrl_status">{{ status['text'] }}</td>
-
+		
             </tr>
             <tr>
                 <th></th>
@@ -49,7 +49,7 @@
                     <button type="button" {{ status['start'] }} id="ctrl_start" class="btn btn-success">Start</button>
                     <button type="button" {{ status['stop'] }} id="ctrl_stop" class="btn btn-danger">Stop</button>
                 </td>
-
+		
             </tr>
         </table>
     </div>

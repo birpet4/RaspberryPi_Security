@@ -6,6 +6,7 @@ import multiprocessing as mp
 import os, sys, logging, uuid, base64, json
 import cv2
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from raspberry_sec.system import zonemanager
 from raspberry_sec.system.main import PCARuntime, LogRuntime
 from raspberry_sec.system.util import ProcessReady
 from raspberry_sec.interface.producer import Type
@@ -163,7 +164,7 @@ class ControlHandler(BaseHandler):
         """
         ControlHandler.LOGGER.info('Handling POST message')
         self.set_header('Content-Type', 'text/plain')
-       
+
         on = 'true' == self.get_argument('on')       
         zones = self.get_argument('zone') 
 
@@ -175,7 +176,7 @@ class ControlHandler(BaseHandler):
 
         else:
             self.stop_pca()
-        
+
 class ZoneHandler(BaseHandler):
 
     LOGGER = logging.getLogger('ZoneHandler')
@@ -189,12 +190,23 @@ class ZoneHandler(BaseHandler):
         
         with open(BaseHandler.CONFIG_PATH, 'r') as file:
             config = file.read()
-        
+
         data = json.loads(config)
         print(data.keys())
         stream_controller = data['stream_controller']
         """self.render("zones.html", data=json.dumps(data))"""
+
         self.write(stream_controller['zones'])
+
+   # @authenticated
+    def put(self):
+        """
+        Returns zones from json
+        """
+        ZoneHandler.LOGGER.info('Handling PUT message')
+        
+        zone = self.request.body
+        print(zone)
 
 class FeedHandler(BaseHandler):
 
