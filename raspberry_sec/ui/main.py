@@ -229,7 +229,7 @@ class ZoneHandler(BaseHandler):
         """
         ZoneHandler.LOGGER.info('Handling DELETE message')
 
-        deleted_zone = self.get_argument('zone') 
+        deleted_zone = self.get_argument('zone')
         BaseHandler.ZONEMANAGER.delete_zone(deleted_zone)
 
 class FeedHandler(BaseHandler):

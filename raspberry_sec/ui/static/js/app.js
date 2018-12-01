@@ -69,16 +69,12 @@ function onDeleteZone(zone) {
 	});
 }
 
-var zones = [];
-
 function initZones(zones) {
-	var j = 0;
 	var zoneTable = document.getElementById("controltable");
 	jQuery.each(zones, function(i, value) {
-		zoneTable.insertAdjacentHTML('afterBegin','<tr><td>' + i.charAt(0).toUpperCase() + i.slice(1) + '</td><td><input type="checkbox" name="zone" value="' + i + '"></td><td><input type="button" id="'+ i +'" value="Delete"></td></tr>');
-		zones[j] = i;
-		j++;
-		$('#' + i).click(
+		var button = i.replace(/\s/g, '_');
+		zoneTable.insertAdjacentHTML('afterBegin','<tr><td>' + i.charAt(0).toUpperCase() + i.slice(1) + '</td><td><input type="checkbox" name="zone" value="' + i + '"></td><td><input type="button" id="'+ button +'" value="Delete"></td></tr>');
+		$('#' + button).click(
 			function() {
 				onDeleteZone(i);
 		});
