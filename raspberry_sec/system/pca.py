@@ -4,7 +4,7 @@ import importlib
 from json import JSONDecoder
 from json import JSONEncoder
 from multiprocessing import Queue
-from raspberry_sec.system import zonemanager
+from raspberry_sec.system.zonemanager import ZoneManager
 from raspberry_sec.system.util import Loader, DynamicLoader, ProcessContext, ProcessReady
 from raspberry_sec.interface.action import Action
 from raspberry_sec.interface.consumer import Consumer
@@ -29,8 +29,7 @@ class PCASystem(ProcessReady):
 		self.stream_processes = []
 		self.prod_to_proc = {}
 		self.prod_to_proxy = {}
-		self.zones = dict()
-
+		
 		self.manager = None
 		self.stream_controller = None
 		self.sc_queue = None
@@ -42,7 +41,7 @@ class PCASystem(ProcessReady):
 		Raises exception if something is wrong.
 		:return True if the system seems to be good, False otherwise
 		"""
-		print(zonemanager.zones)
+
 		if not self.stream_controller:
 			msg = 'StreamController was not set'
 			PCASystem.LOGGER.error(msg)
@@ -54,16 +53,10 @@ class PCASystem(ProcessReady):
 
 		return True
 
-	def set_zonemanager(self, _zones: str):	
-		zonemanager.initialize()	
-		self.zones = json.loads(_zones)	
-		#zonemanager.initialize(self.zones)
-		zonemanager.set_zones(self.zones)
-
 	def run(self, context: ProcessContext):
 		"""
 		This method starts the components in separate processes
-		and then waits for the stop event. It then terminates the processes if necessary.
+		and then waits f r the stop event. It then terminates the processes if necessary.
 		:param context: contains tools needed for 'running alone'
 		"""
 

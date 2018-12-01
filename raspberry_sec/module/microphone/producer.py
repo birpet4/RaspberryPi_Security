@@ -33,7 +33,7 @@ class MicrophoneProducer(Producer):
 	def run(self, context: ProcessContext):
 		r = sr.Recognizer()
 
-		with sr.Microphone(device_index=self.parameters['device']) as source:
+		with sr.Microphone() as source:
     			MicrophoneProducer.LOGGER.info('Microphone active')
     			audio = r.listen(source)	
 		try:	

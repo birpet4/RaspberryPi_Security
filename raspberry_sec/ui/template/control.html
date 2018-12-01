@@ -14,28 +14,12 @@
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <table class="table" id="controltable">
             <tr>
-                <!--<th>Add Zones:</th>
+                <th>Add Zones:</th>
                 <td id="ctrl_status">
 			<input type="text" id="text_zone">
-			<button id="add_zone">Add Zone</button>
-		</td>-->
+			<button id="add_zone">Add</button>
+		</td>
 
-            </tr>
-            <tr>
-                <!--<th>Installed Zones:</th>
-		<td id = "zones">
-			<input type="checkbox" name="zone" value="bedroom"> Bedroom
-
-			<input type="checkbox" name="zone" value="living room"> Living Room
-
-			<input type="checkbox" name="zone" value="hallway"> Hallway
-
-			<input type="checkbox" name="zone" value="kitchen"> Kitchen
-
-			<input type="checkbox" name="zone" value="dining room"> Dining Room
-
-			<input type="checkbox" name="zone" value="front entrance"> Front Entrance
-		</td>-->
             </tr>
             <tr>
                 <th>Status:</th>
@@ -48,8 +32,7 @@
                     {% module xsrf_form_html() %}
                     <button type="button" {{ status['start'] }} id="ctrl_start" class="btn btn-success">Start</button>
                     <button type="button" {{ status['stop'] }} id="ctrl_stop" class="btn btn-danger">Stop</button>
-                </td>
-		
+                </td>		
             </tr>
         </table>
     </div>

@@ -15,14 +15,13 @@
         },
         "msg_limit": "100",
         "polling_interval": "3",
-        "query": "@STREAM1@ and @STREAM2@",
+        "query": "@STREAM1@ and @STREAM2@ and @STREAM3@ ",
         "zones": {
-            "bedroom": false,
-            "dining room": true,
+            "Garage": false,
+            "Small Room": false,
+            "dining room": false,
             "front entrance": false,
-            "hallway": true,
-            "kitchen": false,
-            "living room": true
+            "living room": false
         }
     },
     "streams": [
@@ -105,7 +104,7 @@
                     "device": 0,
                     "unsuccessful_limit": 50,
                     "wait_key_interval": 250,
-                    "zone": "bedroom"
+                    "zone": "kitchen"
                 }
             }
         },

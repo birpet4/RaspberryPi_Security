@@ -55,26 +55,65 @@ function ctrlButtonSend(onStr, zone) {
     });
 }
 
+function onDeleteZone(zone) {
+	$.ajax({
+	    url: '/zones/' + zone,
+	    type: 'POST',
+	    data: { 'zone': zone },
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
+        },
+	    success: function(result) {
+		alert('asdf');
+                location.reload();
+	    }
+	});
+}
+
+var zones = [];
+
 function initZones(zones) {
+	var j = 0;
 	var zoneTable = document.getElementById("controltable");
 	jQuery.each(zones, function(i, value) {
-		zoneTable.insertAdjacentHTML('afterBegin','<tr><td>' + i.charAt(0).toUpperCase() + i.slice(1) + '</td><td><input type="checkbox" name="zone" value="' + i + '"></td></tr>');
+		zoneTable.insertAdjacentHTML('afterBegin','<tr><td>' + i.charAt(0).toUpperCase() + i.slice(1) + '</td><td><input type="checkbox" name="zone" value="' + i + '"></td><td><input type="button" id="'+ i +'" value="Delete"></td></tr>');
+		zones[j] = i;
+		j++;
+		$('#' + i).click(
+			function() {
+				onDeleteZone(i);
+				alert('fuck');
+		});
 	});
-	zoneTable.insertAdjacentHTML('afterbegin','<tr><th>Zones:</th><th>Arm:</th></tr>');
-
+	zoneTable.insertAdjacentHTML('afterbegin','<tr><th>Zones:</th><th>Arm:</th><th></th></tr>');
 }
+
+function onAddZone(zone) {
+	$.ajax({
+	   url: 'zones',
+	   type: 'POST',
+           data: {'zone' : zone},
+       	   beforeSend: function(xhr) {
+             xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
+           },
+	   success: function(response) {
+                location.reload();
+	   }
+	});
+}
+
+$('#add_zone').click(
+	function() {
+		var zoneTable = document.getElementById("zones");
+		var zone = document.getElementById("text_zone").value;
+		var zone_id = zone.toLowerCase();
+		onAddZone(zone);
+});
 
 window.onload = function() {
 	
 	if (window.location.href.match('control') != null) {
 		
-		/*$.ajax({
-		  url: 'zones',
-		  cache: false,
-		  success: function(data){
-		    initZones(data);
-		}
-		});*/
 		$.getJSON('zones', function(data) {
    		 initZones(data)
 		});
@@ -114,6 +153,7 @@ $('#ctrl_start').click(
 	var zone = printChecked();
         ctrlButtonSend('true', zone);
 });
+
 $('#ctrl_stop').click(
     function(){
 	zone = null

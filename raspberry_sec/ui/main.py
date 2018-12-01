@@ -6,7 +6,7 @@ import multiprocessing as mp
 import os, sys, logging, uuid, base64, json
 import cv2
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from raspberry_sec.system import zonemanager
+from raspberry_sec.system.zonemanager import ZoneManager
 from raspberry_sec.system.main import PCARuntime, LogRuntime
 from raspberry_sec.system.util import ProcessReady
 from raspberry_sec.interface.producer import Type
@@ -18,6 +18,8 @@ class BaseHandler(RequestHandler):
     PCA_RUNTIME = 'pca'
 
     LOG_RUNTIME = 'log'
+
+    ZONEMANAGER = ZoneManager()
 
     @staticmethod
     def get_abs_path(file: str):
@@ -32,6 +34,7 @@ class BaseHandler(RequestHandler):
 
     def initialize(self, shared_data):
         self.shared_data = shared_data
+        self.zone_manager = ZoneManager()
 
     def get_log_runtime(self):
         """
@@ -166,47 +169,68 @@ class ControlHandler(BaseHandler):
         self.set_header('Content-Type', 'text/plain')
 
         on = 'true' == self.get_argument('on')       
-        zones = self.get_argument('zone') 
-
+        zones = self.get_argument('zone')
+        zone_manager = ZoneManager()
         if on:
             self.stop_pca()
             self.start_pca()
-            runtime = self.get_pca_runtime()    
-            runtime.pca_system.set_zonemanager(zones)
-
+            runtime = self.get_pca_runtime()
+            zone_manager.set_zones(json.loads(zones))
+ 
         else:
             self.stop_pca()
+
+class ZonesHandler(BaseHandler):
+
+    LOGGER = logging.getLogger('ZonesHandler')
+
+    @authenticated
+    def get(self):
+        """
+        Returns zones from JSON config
+        """
+        ZonesHandler.LOGGER.info('Handling GET message')
+        
+        with open(BaseHandler.CONFIG_PATH, 'r') as file:
+            config = file.read()
+
+        data = json.loads(config)
+        self.write(data['stream_controller']['zones'])
+
+    @authenticated
+    def post(self):
+        """
+        Add new zone to JSON config
+        """
+        ZonesHandler.LOGGER.info('Handling POST message')
+        
+        new_zone = self.get_argument('zone') 
+        BaseHandler.ZONEMANAGER.add_zone(new_zone)
+
+
+    @authenticated
+    def delete(self, zone):
+        """
+        Deleting existing zone
+        """
+        ZonesHandler.LOGGER.info('Handling DELETE message')
+
+        deleted_zone = self.get_argument('zone') 
+        BaseHandler.ZONEMANAGER.delete_zone(deleted_zone)
 
 class ZoneHandler(BaseHandler):
 
     LOGGER = logging.getLogger('ZoneHandler')
 
     @authenticated
-    def get(self):
+    def post(self):
         """
-        Returns zones from json
+        Deleting existing zone
         """
-        ZoneHandler.LOGGER.info('Handling GET message')
-        
-        with open(BaseHandler.CONFIG_PATH, 'r') as file:
-            config = file.read()
+        ZoneHandler.LOGGER.info('Handling DELETE message')
 
-        data = json.loads(config)
-        print(data.keys())
-        stream_controller = data['stream_controller']
-        """self.render("zones.html", data=json.dumps(data))"""
-
-        self.write(stream_controller['zones'])
-
-   # @authenticated
-    def put(self):
-        """
-        Returns zones from json
-        """
-        ZoneHandler.LOGGER.info('Handling PUT message')
-        
-        zone = self.request.body
-        print(zone)
+        deleted_zone = self.get_argument('zone') 
+        BaseHandler.ZONEMANAGER.delete_zone(deleted_zone)
 
 class FeedHandler(BaseHandler):
 
@@ -360,7 +384,8 @@ def make_app(log_runtime: LogRuntime):
         (r'/', MainHandler, config),
         (r'/configure', ConfigureHandler, config),
         (r'/control', ControlHandler, config),
-        (r'/zones', ZoneHandler, config),
+        (r'/zones', ZonesHandler, config),
+        (r'/zones/.*', ZoneHandler, config),
         (r'/feed', FeedHandler, config),
         (r'/feed/websocket', FeedWebSocketHandler, config),
         (r'/about', AboutHandler, config),
