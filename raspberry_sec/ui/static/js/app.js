@@ -64,7 +64,6 @@ function onDeleteZone(zone) {
             xhr.setRequestHeader('X-CSRFToken', getXSRFCookie());
         },
 	    success: function(result) {
-		alert('asdf');
                 location.reload();
 	    }
 	});
@@ -82,7 +81,6 @@ function initZones(zones) {
 		$('#' + i).click(
 			function() {
 				onDeleteZone(i);
-				alert('fuck');
 		});
 	});
 	zoneTable.insertAdjacentHTML('afterbegin','<tr><th>Zones:</th><th>Arm:</th><th></th></tr>');
