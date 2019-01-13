@@ -1,12 +1,6 @@
 import logging
-import re
-import time
-import pickle
 import os, sys, json
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from concurrent.futures import ThreadPoolExecutor
-from itertools import groupby
-from ast import literal_eval
 
 class ZoneManager:
 
@@ -35,22 +29,21 @@ class ZoneManager:
 		zones = stream_controller['zones'] 
 
 		if zones:
-			print(zones)
 			ZoneManager.LOGGER.info('ZoneManager inizialized')
 		else:
 			ZoneManager.LOGGER.info('Error initializing ZoneManager')
 
-	def set_zones(self,_zones: str):
+	def set_zones(self,zones: str):
 		"""
 		Save the JSON config with the new zones
-		:para _zones: the new version of zones
+		:param zones: the new version of zones
 		"""
-		ZoneManager.LOGGER.info('Setting new zones')
+		ZoneManager.LOGGER.info('Setting up new zones')
 		with open(ZoneManager.CONFIG_PATH, 'r') as file:
 			config = file.read()
 
 		data = json.loads(config)
-		data['stream_controller']['zones'] = _zones
+		data['stream_controller']['zones'] = zones
 
 		with open(ZoneManager.CONFIG_PATH, 'w+') as file:
 			json.dump(fp=file, obj=data, indent=4, sort_keys=True)
@@ -69,7 +62,7 @@ class ZoneManager:
 		zones = stream_controller['zones']
 		return zones
 
-	def add_zone(self,zone:str):
+	def add_zone(self,zone: str):
 		"""
 		Add new zone
 		Save into the JSON config
@@ -116,7 +109,7 @@ class ZoneManager:
 		return False
 
 
-	def toggle_zone(self, zone: str):
+	def toggle_zone(self,zone: str):
 		"""
 		Function for toggle zone activity
 		:param zone: the actual zone what we want to activate or deactivate
