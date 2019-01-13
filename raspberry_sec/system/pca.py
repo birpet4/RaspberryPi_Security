@@ -4,7 +4,6 @@ import importlib
 from json import JSONDecoder
 from json import JSONEncoder
 from multiprocessing import Queue
-from raspberry_sec.system.zonemanager import ZoneManager
 from raspberry_sec.system.util import Loader, DynamicLoader, ProcessContext, ProcessReady
 from raspberry_sec.interface.action import Action
 from raspberry_sec.interface.consumer import Consumer
